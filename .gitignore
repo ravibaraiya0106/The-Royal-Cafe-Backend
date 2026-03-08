@@ -5,3 +5,6 @@ dist/
 build/
 logs/
 *.log
+
+# package-lock 
+package-lock.json

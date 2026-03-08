@@ -21,10 +21,21 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-/* Routes */
-app.use("/api/v1/auth", require("./src/routes/auth.routes"));
+app.use("/uploads", express.static("uploads"));
+/* ================= API VERSION ================= */
 
-/* Health Check */
+const API_PREFIX = "/api/v1";
+
+/* ================= ROUTES ================= */
+
+// Auth Routes
+app.use(`${API_PREFIX}/auth`, require("./src/routes/auth.routes"));
+
+// Category Routes
+app.use(`${API_PREFIX}/category`, require("./src/routes/category.routes"));
+
+/* ================= HEALTH CHECK ================= */
+
 app.get("/", (req, res) => {
   sendResponse(res, {
     success: SUCCESS.YES,
@@ -33,7 +44,8 @@ app.get("/", (req, res) => {
   });
 });
 
-/* 404 Handler */
+/* ================= 404 HANDLER ================= */
+
 app.use((req, res) => {
   sendResponse(res, {
     success: SUCCESS.NO,

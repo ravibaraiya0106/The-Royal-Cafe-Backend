@@ -6,7 +6,6 @@ const { SUCCESS, STATUS_CODES, MESSAGES } = require("../constants/constant");
 const authMiddleware = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
-    console.log("authHeader", authHeader);
 
     if (!authHeader) {
       return sendResponse(res, {
