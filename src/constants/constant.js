@@ -32,18 +32,38 @@ const MESSAGES = {
   AUTH: {
     REGISTER_SUCCESS: "User registered successfully",
     LOGIN_SUCCESS: "Login successful",
-    INVALID_CREDENTIALS: "Invalid email or password",
+    LOGOUT_SUCCESS: "Logout successful",
+    INVALID_CREDENTIALS: "Invalid username or password",
     USER_ALREADY_EXISTS: "User already exists",
+    EMAIL_ALREADY_EXISTS: "Email already registered",
+    USERNAME_ALREADY_EXISTS: "Username already taken",
+    PASSWORD_REQUIRED: "Password is required",
     ACCOUNT_INACTIVE: "Account is inactive",
-    SERVER_ERROR: "Something went wrong",
+    UNAUTHORIZED_ACCESS: "Unauthorized access",
   },
+
   USER: {
     USER_NOT_FOUND: "User not found",
+    USER_FETCH_SUCCESS: "User fetched successfully",
+    USER_UPDATED: "User updated successfully",
+    USER_DELETED: "User deleted successfully",
   },
-  COMMONN: {
-    HEALTH_CHECK :"Royal Cafe API running",
-    ROUTE_NOT_FOUND :"Route not found",
-  }
+
+  VALIDATION: {
+    REQUIRED_FIELDS: "Required fields are missing",
+    INVALID_EMAIL: "Invalid email format",
+    INVALID_PHONE: "Invalid phone number",
+  },
+
+  COMMON: {
+    HEALTH_CHECK: "Royal Cafe API running",
+    ROUTE_NOT_FOUND: "Route not found",
+    SERVER_ERROR: "Something went wrong",
+    INVALID_TOKEN: "Invalid token",
+    TOKEN_EXPIRED: "Token has expired, please login again",
+    TOKEN_REQUIRED: "Token is required",
+    UNAUTHORIZED_ACCESS: "Unauthorized access",
+  },
 };
 
 module.exports = {

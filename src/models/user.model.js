@@ -47,6 +47,11 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+
+    mail_send: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: {

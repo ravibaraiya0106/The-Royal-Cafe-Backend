@@ -23,7 +23,7 @@ const register = async (req, res) => {
   } catch (error) {
     return sendResponse(res, {
       success: SUCCESS.NO,
-      message: error.message,
+      message: error.message || MESSAGES.COMMON.SERVER_ERROR,
       statusCode: STATUS_CODES.BAD_REQUEST,
     });
   }
@@ -34,6 +34,14 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { username, password } = req.body || {};
+
+    if (!username || !password) {
+      return sendResponse(res, {
+        success: SUCCESS.NO,
+        message: MESSAGES.AUTH.INVALID_CREDENTIALS,
+        statusCode: STATUS_CODES.BAD_REQUEST,
+      });
+    }
 
     const user = await authService.loginUser(username, password);
 
@@ -51,8 +59,42 @@ const login = async (req, res) => {
   } catch (error) {
     return sendResponse(res, {
       success: SUCCESS.NO,
-      message: error.message,
-      statusCode: STATUS_CODES.BAD_REQUEST,
+      message: error.message || MESSAGES.COMMON.SERVER_ERROR,
+      statusCode: STATUS_CODES.UNAUTHORIZED,
+    });
+  }
+};
+
+/* ================= LOGOUT ================= */
+
+const logout = async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    console.log("authHeader", authHeader);
+
+    if (!authHeader) {
+      return sendResponse(res, {
+        success: SUCCESS.NO,
+        message: MESSAGES.AUTH.UNAUTHORIZED_ACCESS,
+        statusCode: STATUS_CODES.UNAUTHORIZED,
+      });
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    await authService.logoutUser(token);
+
+    return sendResponse(res, {
+      success: SUCCESS.YES,
+      message: MESSAGES.AUTH.LOGOUT_SUCCESS,
+      data: null,
+      statusCode: STATUS_CODES.OK,
+    });
+  } catch (error) {
+    return sendResponse(res, {
+      success: SUCCESS.NO,
+      message: error.message || MESSAGES.COMMON.SERVER_ERROR,
+      statusCode: STATUS_CODES.SERVER_ERROR,
     });
   }
 };
@@ -60,4 +102,5 @@ const login = async (req, res) => {
 module.exports = {
   register,
   login,
+  logout,
 };
