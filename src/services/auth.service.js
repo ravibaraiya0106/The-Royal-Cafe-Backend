@@ -2,6 +2,7 @@ const User = require("../models/user.model");
 const BlacklistToken = require("../models/blacklistToken.model");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+
 const { MESSAGES, ACCOUNT_STATUS, ROLES } = require("../constants/constant");
 
 /* ================= REGISTER USER ================= */
@@ -14,17 +15,23 @@ const registerUser = async (data = {}) => {
     throw new Error(MESSAGES.AUTH.PASSWORD_REQUIRED);
   }
 
-  const existingEmail = await User.findOne({ email });
+  /* Check existing user */
 
-  if (existingEmail) {
-    throw new Error(MESSAGES.AUTH.EMAIL_ALREADY_EXISTS);
+  const existingUser = await User.findOne({
+    $or: [{ email }, { username }],
+  });
+
+  if (existingUser) {
+    if (existingUser.email === email) {
+      throw new Error(MESSAGES.AUTH.EMAIL_ALREADY_EXISTS);
+    }
+
+    if (existingUser.username === username) {
+      throw new Error(MESSAGES.AUTH.USERNAME_ALREADY_EXISTS);
+    }
   }
 
-  const existingUsername = await User.findOne({ username });
-
-  if (existingUsername) {
-    throw new Error(MESSAGES.AUTH.USERNAME_ALREADY_EXISTS);
-  }
+  /* Hash password */
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -39,7 +46,12 @@ const registerUser = async (data = {}) => {
     is_active: ACCOUNT_STATUS.ACTIVE,
   });
 
-  return user;
+  /* Remove password before returning */
+
+  const userObject = user.toObject();
+  delete userObject.password;
+
+  return userObject;
 };
 
 /* ================= LOGIN USER ================= */
@@ -51,7 +63,7 @@ const loginUser = async (username, password) => {
     throw new Error(MESSAGES.AUTH.INVALID_CREDENTIALS);
   }
 
-  if (!user.is_active) {
+  if (user.is_active !== ACCOUNT_STATUS.ACTIVE) {
     throw new Error(MESSAGES.AUTH.ACCOUNT_INACTIVE);
   }
 
@@ -61,8 +73,13 @@ const loginUser = async (username, password) => {
     throw new Error(MESSAGES.AUTH.INVALID_CREDENTIALS);
   }
 
-  return user;
+  const userObject = user.toObject();
+  delete userObject.password;
+
+  return userObject;
 };
+
+/* ================= LOGOUT USER ================= */
 
 const logoutUser = async (token) => {
   if (!token) {
@@ -71,10 +88,15 @@ const logoutUser = async (token) => {
 
   const decoded = jwt.decode(token);
 
+  if (!decoded) {
+    throw new Error(MESSAGES.AUTH.INVALID_TOKEN);
+  }
+
   await BlacklistToken.create({
     token,
     expires_at: new Date(decoded.exp * 1000),
   });
+
   return true;
 };
 

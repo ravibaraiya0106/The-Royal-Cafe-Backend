@@ -47,17 +47,13 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-
-    mail_send: {
-      type: Boolean,
-      default: false,
+    deleted_at: {
+      type: Date,
+      default: null,
     },
   },
   {
-    timestamps: {
-      createdAt: "created_at",
-      updatedAt: "updated_at",
-    },
+    timestamps: true,
   },
 );
 

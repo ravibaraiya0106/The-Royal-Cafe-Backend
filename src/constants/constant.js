@@ -4,6 +4,12 @@ const SUCCESS = {
   NO: false,
 };
 
+/* Upload Paths */
+const PATHS = {
+  CATEGORY_IMAGE_UPLOAD: "uploads/categories",
+  CATEGORY_IMAGE_PUBLIC: "/uploads/categories",
+};
+
 /* User Roles */
 const ROLES = {
   ADMIN: "admin",
@@ -49,10 +55,14 @@ const MESSAGES = {
     USER_DELETED: "User deleted successfully",
   },
 
-  VALIDATION: {
-    REQUIRED_FIELDS: "Required fields are missing",
-    INVALID_EMAIL: "Invalid email format",
-    INVALID_PHONE: "Invalid phone number",
+  CATEGORY: {
+    CREATE_SUCCESS: "Category created successfully.",
+    UPDATE_SUCCESS: "Category updated successfully.",
+    DELETE_SUCCESS: "Category deleted successfully.",
+    LIST: "Category list fetched successfully.",
+    DETAILS: "Category details fetched successfully.",
+    NOT_FOUND: "Category not found.",
+    ALREADY_EXISTS: "Category already exists.",
   },
 
   COMMON: {
@@ -66,10 +76,14 @@ const MESSAGES = {
   },
 };
 
+const VALIDATION = {};
+
 module.exports = {
   SUCCESS,
   ROLES,
   ACCOUNT_STATUS,
   STATUS_CODES,
   MESSAGES,
+  PATHS,
+  VALIDATION,
 };
