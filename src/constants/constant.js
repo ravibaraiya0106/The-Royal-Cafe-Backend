@@ -8,6 +8,8 @@ const SUCCESS = {
 const PATHS = {
   CATEGORY_IMAGE_UPLOAD: "uploads/categories",
   CATEGORY_IMAGE_PUBLIC: "/uploads/categories",
+  PRODUCT_IMAGE_UPLOAD: "uploads/products",
+  PRODUCT_IMAGE_PUBLIC: "/uploads/products",
 };
 
 /* User Roles */
@@ -64,7 +66,14 @@ const MESSAGES = {
     NOT_FOUND: "Category not found.",
     ALREADY_EXISTS: "Category already exists.",
   },
-
+  PRODUCT: {
+    CREATE_SUCCESS: "Product created successfully",
+    UPDATE_SUCCESS: "Product updated successfully",
+    DELETE_SUCCESS: "Product deleted successfully",
+    FETCH_SUCCESS: "Products fetched successfully",
+    NOT_FOUND: "Product not found",
+    ALREADY_EXISTS: "Product already exists in this category",
+  },
   COMMON: {
     HEALTH_CHECK: "Royal Cafe API running",
     ROUTE_NOT_FOUND: "Route not found",
@@ -73,6 +82,7 @@ const MESSAGES = {
     TOKEN_EXPIRED: "Token has expired, please login again",
     TOKEN_REQUIRED: "Token is required",
     UNAUTHORIZED_ACCESS: "Unauthorized access",
+    VALIDATION_ERROR: "Validation error",
   },
 };
 

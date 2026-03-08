@@ -3,6 +3,11 @@ const router = express.Router();
 const categoryController = require("../controllers/category.controller");
 const authMiddleware = require("../middlewares/auth.middleware");
 const { uploadCategoryImage } = require("../middlewares/upload.middleware");
+const validate = require("../middlewares/validation.middleware");
+const {
+  createCategoryValidation,
+  updateCategoryValidation,
+} = require("../validations/category.validation");
 
 /* ================= CREATE CATEGORY ================= */
 
@@ -10,6 +15,7 @@ router.post(
   "/create",
   authMiddleware,
   uploadCategoryImage.single("image"),
+  validate(createCategoryValidation),
   categoryController.createCategory,
 );
 
@@ -27,6 +33,7 @@ router.put(
   "/update/:id",
   authMiddleware,
   uploadCategoryImage.single("image"),
+  validate(updateCategoryValidation),
   categoryController.updateCategory,
 );
 

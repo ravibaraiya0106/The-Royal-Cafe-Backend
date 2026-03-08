@@ -1,13 +1,12 @@
 const mongoose = require("mongoose");
 const slugify = require("slugify");
 
-const categorySchema = new mongoose.Schema(
+const productSchema = new mongoose.Schema(
   {
     name: {
       type: String,
       required: true,
       trim: true,
-      unique: true,
     },
 
     slug: {
@@ -18,9 +17,21 @@ const categorySchema = new mongoose.Schema(
       index: true,
     },
 
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      required: true,
+    },
+
     description: {
       type: String,
       default: "",
+    },
+
+    price: {
+      type: Number,
+      required: true,
+      min: 0,
     },
 
     image: {
@@ -33,6 +44,11 @@ const categorySchema = new mongoose.Schema(
       default: true,
     },
 
+    is_special: {
+      type: Boolean,
+      default: false,
+    },
+
     deleted_at: {
       type: Date,
       default: null,
@@ -43,15 +59,17 @@ const categorySchema = new mongoose.Schema(
   },
 );
 
-/* Auto generate slug before save */
-categorySchema.pre("save", async function () {
+/* ================= AUTO GENERATE SLUG ================= */
+
+productSchema.pre("save", async function () {
   if (this.name) {
     this.slug = slugify(this.name, { lower: true, strict: true });
   }
 });
 
-/* Update slug when name changes */
-categorySchema.pre("findOneAndUpdate", async function () {
+/* ================= UPDATE SLUG ================= */
+
+productSchema.pre("findOneAndUpdate", async function () {
   const update = this.getUpdate();
 
   if (update?.name) {
@@ -59,4 +77,5 @@ categorySchema.pre("findOneAndUpdate", async function () {
     this.setUpdate(update);
   }
 });
-module.exports = mongoose.model("Category", categorySchema);
+
+module.exports = mongoose.model("Product", productSchema);

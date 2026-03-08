@@ -8,7 +8,11 @@ if (!fs.existsSync(PATHS.CATEGORY_IMAGE_UPLOAD)) {
   fs.mkdirSync(PATHS.CATEGORY_IMAGE_UPLOAD, { recursive: true });
 }
 
-const storage = multer.diskStorage({
+if (!fs.existsSync(PATHS.PRODUCT_IMAGE_UPLOAD)) {
+  fs.mkdirSync(PATHS.PRODUCT_IMAGE_UPLOAD, { recursive: true });
+}
+
+const categoryImageStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, PATHS.CATEGORY_IMAGE_UPLOAD);
   },
@@ -19,6 +23,18 @@ const storage = multer.diskStorage({
   },
 });
 
-const uploadCategoryImage = multer({ storage });
+const productImageStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, PATHS.PRODUCT_IMAGE_UPLOAD);
+  },
 
-module.exports = { uploadCategoryImage };
+  filename: (req, file, cb) => {
+    const fileName = Date.now() + path.extname(file.originalname);
+    cb(null, fileName);
+  },
+});
+
+const uploadCategoryImage = multer({ categoryImageStorage });
+const uploadProductImage = multer({ productImageStorage });
+
+module.exports = { uploadCategoryImage, uploadProductImage };

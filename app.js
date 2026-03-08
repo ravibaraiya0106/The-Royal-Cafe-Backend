@@ -34,6 +34,9 @@ app.use(`${API_PREFIX}/auth`, require("./src/routes/auth.routes"));
 // Category Routes
 app.use(`${API_PREFIX}/category`, require("./src/routes/category.routes"));
 
+// Product Routes
+app.use(`${API_PREFIX}/product`, require("./src/routes/product.routes"));
+
 /* ================= HEALTH CHECK ================= */
 
 app.get("/", (req, res) => {
