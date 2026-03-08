@@ -4,10 +4,7 @@ const { MESSAGES } = require("../constants/constant");
 /* ================= CREATE CATEGORY ================= */
 
 const createCategory = async (data = {}) => {
-  console.log("➡️ Service: createCategory called");
-
   const { name } = data;
-  console.log("📦 Category Name:", name);
 
   const existing = await Category.findOne({
     name,
@@ -15,18 +12,11 @@ const createCategory = async (data = {}) => {
     is_active: true,
   });
 
-  console.log("🔎 Existing Category:", existing);
-
   if (existing) {
-    console.log("⚠️ Category already exists");
     throw new Error(MESSAGES.CATEGORY.ALREADY_EXISTS);
   }
 
-  console.log("💾 Creating category in database...");
-
   const category = await Category.create(data);
-
-  console.log("✅ Category saved:", category);
 
   return category;
 };

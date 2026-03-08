@@ -12,21 +12,13 @@ const {
 
 const createCategory = async (req, res) => {
   try {
-    console.log("➡️ Create Category API called");
-
     const data = req.body;
-    console.log("📦 Request Body:", data);
 
     if (req.file) {
-      console.log("🖼 Uploaded File:", req.file.filename);
       data.image = `${PATHS.CATEGORY_IMAGE_PUBLIC}/${req.file.filename}`;
     }
 
-    console.log("📤 Sending data to service:", data);
-
     const category = await categoryService.createCategory(data);
-
-    console.log("✅ Category Created:", category);
 
     return sendResponse(res, {
       success: SUCCESS.YES,
@@ -35,8 +27,6 @@ const createCategory = async (req, res) => {
       statusCode: STATUS_CODES.CREATED,
     });
   } catch (error) {
-    console.error("❌ Error in createCategory controller:", error);
-
     return sendResponse(res, {
       success: SUCCESS.NO,
       message: error.message || MESSAGES.COMMON.SERVER_ERROR,
