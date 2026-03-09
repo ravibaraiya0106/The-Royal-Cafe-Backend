@@ -1,8 +1,9 @@
 const { MESSAGES } = require("../constants/constant");
 
 const validate = (schema) => (req, res, next) => {
-  const { error } = schema.validate(req.body, {
+  const { error, value } = schema.validate(req.body, {
     abortEarly: false,
+    stripUnknown: true,
   });
 
   if (error) {
@@ -12,6 +13,9 @@ const validate = (schema) => (req, res, next) => {
       errors: error.details.map((err) => err.message),
     });
   }
+
+  // IMPORTANT: replace request body with validated data
+  req.body = value;
 
   next();
 };

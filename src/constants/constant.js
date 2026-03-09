@@ -51,10 +51,11 @@ const MESSAGES = {
   },
 
   USER: {
-    USER_NOT_FOUND: "User not found",
-    USER_FETCH_SUCCESS: "User fetched successfully",
-    USER_UPDATED: "User updated successfully",
-    USER_DELETED: "User deleted successfully",
+    NOT_FOUND: "User not found",
+    FETCH_SUCCESS: "Users fetched successfully",
+    FETCH_SINGLE_SUCCESS: "User fetched successfully",
+    UPDATED: "User updated successfully",
+    DELETED: "User deleted successfully",
   },
 
   CATEGORY: {

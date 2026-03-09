@@ -37,6 +37,9 @@ app.use(`${API_PREFIX}/category`, require("./src/routes/category.routes"));
 // Product Routes
 app.use(`${API_PREFIX}/product`, require("./src/routes/product.routes"));
 
+// User Routes
+app.use(`${API_PREFIX}/user`, require("./src/routes/user.routes"));
+
 /* ================= HEALTH CHECK ================= */
 
 app.get("/", (req, res) => {

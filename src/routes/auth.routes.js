@@ -4,12 +4,27 @@ const multer = require("multer");
 const upload = multer();
 const authController = require("../controllers/auth.controller");
 const authMiddleware = require("../middlewares/auth.middleware");
+const validate = require("../middlewares/validation.middleware");
+const {
+  registerValidation,
+  loginValidation,
+} = require("../validations/user.validation");
 
 /* ================= REGISTER USER ================= */
-router.post("/register", upload.none(), authController.register);
+router.post(
+  "/register",
+  upload.none(),
+  validate(registerValidation),
+  authController.register,
+);
 
 /* ================= LOGIN USER ================= */
-router.post("/login", upload.none(), authController.login);
+router.post(
+  "/login",
+  upload.none(),
+  validate(loginValidation),
+  authController.login,
+);
 
 /* ================= LOGOUT USER ================= */
 router.post("/logout", upload.none(), authMiddleware, authController.logout);

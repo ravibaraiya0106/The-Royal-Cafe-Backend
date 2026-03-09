@@ -4,25 +4,10 @@ const { sendResponse } = require("../utils/response");
 
 const { SUCCESS, STATUS_CODES, MESSAGES } = require("../constants/constant");
 
-const {
-  registerValidation,
-  loginValidation,
-} = require("../validations/user.validation");
-
 /* ================= REGISTER ================= */
 
 const register = async (req, res) => {
   try {
-    const { error } = registerValidation.validate(req.body);
-
-    if (error) {
-      return sendResponse(res, {
-        success: SUCCESS.NO,
-        message: error.details[0].message,
-        statusCode: STATUS_CODES.BAD_REQUEST,
-      });
-    }
-
     const user = await authService.registerUser(req.body);
 
     const token = generateToken(user);
@@ -49,16 +34,6 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    const { error } = loginValidation.validate(req.body);
-
-    if (error) {
-      return sendResponse(res, {
-        success: SUCCESS.NO,
-        message: error.details[0].message,
-        statusCode: STATUS_CODES.BAD_REQUEST,
-      });
-    }
-
     const { username, password } = req.body;
 
     const user = await authService.loginUser(username, password);

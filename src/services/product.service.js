@@ -69,7 +69,7 @@ const updateProduct = async (id, data = {}) => {
 const deleteProduct = async (id) => {
   const product = await Product.findOneAndUpdate(
     { _id: id, deleted_at: null },
-    { deleted_at: new Date() },
+    { deleted_at: new Date(), is_active: false },
     { new: true },
   );
 
