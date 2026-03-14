@@ -37,6 +37,16 @@ const STATUS_CODES = {
 
 /* Common Messages */
 const MESSAGES = {
+  COMMON: {
+    HEALTH_CHECK: "Royal Cafe API running",
+    ROUTE_NOT_FOUND: "Route not found",
+    SERVER_ERROR: "Something went wrong",
+    INVALID_TOKEN: "Invalid token",
+    TOKEN_EXPIRED: "Token has expired, please login again",
+    TOKEN_REQUIRED: "Token is required",
+    UNAUTHORIZED_ACCESS: "Unauthorized access",
+    VALIDATION_ERROR: "Validation error",
+  },
   AUTH: {
     REGISTER_SUCCESS: "User registered successfully",
     LOGIN_SUCCESS: "Login successful",
@@ -57,7 +67,6 @@ const MESSAGES = {
     UPDATED: "User updated successfully",
     DELETED: "User deleted successfully",
   },
-
   CATEGORY: {
     CREATE_SUCCESS: "Category created successfully.",
     UPDATE_SUCCESS: "Category updated successfully.",
@@ -75,19 +84,75 @@ const MESSAGES = {
     NOT_FOUND: "Product not found",
     ALREADY_EXISTS: "Product already exists in this category",
   },
-  COMMON: {
-    HEALTH_CHECK: "Royal Cafe API running",
-    ROUTE_NOT_FOUND: "Route not found",
-    SERVER_ERROR: "Something went wrong",
-    INVALID_TOKEN: "Invalid token",
-    TOKEN_EXPIRED: "Token has expired, please login again",
-    TOKEN_REQUIRED: "Token is required",
-    UNAUTHORIZED_ACCESS: "Unauthorized access",
-    VALIDATION_ERROR: "Validation error",
+  CONTACT: {
+    CREATE_SUCCESS: "Message sent successfully",
+    LIST: "Contact messages fetched successfully",
+    DETAILS: "Contact message details fetched successfully",
+    REPLY_SUCCESS: "Reply sent successfully",
+    DELETE_SUCCESS: "Contact message deleted successfully",
+    NOT_FOUND: "Contact message not found",
   },
 };
 
-const VALIDATION = {};
+const VALIDATIONS = {
+  USER: {
+    USERNAME_REQUIRED: "Username is required",
+    USERNAME_MIN: "Username must be at least 3 characters",
+    USERNAME_MAX: "Username must not exceed 30 characters",
+
+    FIRST_NAME_REQUIRED: "First name is required",
+    FIRST_NAME_MIN: "First name must be at least 2 characters",
+    FIRST_NAME_MAX: "First name must not exceed 50 characters",
+
+    LAST_NAME_MAX: "Last name must not exceed 50 characters",
+
+    EMAIL_REQUIRED: "Email is required",
+    EMAIL_INVALID: "Invalid email format",
+
+    PHONE_REQUIRED: "Phone number is required",
+    PHONE_INVALID: "Phone number must be between 10-15 digits",
+
+    PASSWORD_REQUIRED: "Password is required",
+    PASSWORD_MIN: "Password must be at least 6 characters",
+
+    ROLE_INVALID: "Invalid user role",
+
+    IS_ACTIVE_BOOLEAN: "is_active must be true or false",
+  },
+  PRODUCT: {
+    NAME_REQUIRED: "Product name is required",
+    NAME_MIN: "Product name must be at least 2 characters",
+    NAME_MAX: "Product name must not exceed 100 characters",
+
+    CATEGORY_REQUIRED: "Category is required",
+
+    PRICE_REQUIRED: "Product price is required",
+    PRICE_MIN: "Product price must be greater than or equal to 0",
+
+    IS_SPECIAL_BOOLEAN: "is_special must be true or false",
+    IS_AVAILABLE_BOOLEAN: "is_available must be true or false",
+  },
+  CONTACT: {
+    NAME_REQUIRED: "Name is required",
+    NAME_MIN: "Name must be at least 2 characters",
+    NAME_MAX: "Name must not exceed 50 characters",
+
+    EMAIL_REQUIRED: "Email is required",
+    EMAIL_INVALID: "Invalid email format",
+
+    MESSAGE_REQUIRED: "Message is required",
+
+    REPLY_REQUIRED: "Reply message is required",
+    ID_REQUIRED: "ID is required",
+  },
+  CATEGORY: {
+    NAME_REQUIRED: "Category name is required",
+    NAME_MIN: "Category name must be at least 2 characters",
+    NAME_MAX: "Category name must not exceed 100 characters",
+
+    IS_ACTIVE_BOOLEAN: "is_active must be true or false",
+  },
+};
 
 module.exports = {
   SUCCESS,
@@ -96,5 +161,5 @@ module.exports = {
   STATUS_CODES,
   MESSAGES,
   PATHS,
-  VALIDATION,
+  VALIDATIONS,
 };

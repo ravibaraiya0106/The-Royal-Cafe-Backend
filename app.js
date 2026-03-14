@@ -40,6 +40,9 @@ app.use(`${API_PREFIX}/product`, require("./src/routes/product.routes"));
 // User Routes
 app.use(`${API_PREFIX}/user`, require("./src/routes/user.routes"));
 
+// Contact Routes
+app.use(`${API_PREFIX}/contact`, require("./src/routes/contact.routes"));
+
 /* ================= HEALTH CHECK ================= */
 
 app.get("/", (req, res) => {

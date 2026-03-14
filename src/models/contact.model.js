@@ -30,10 +30,23 @@ const contactSchema = new mongoose.Schema(
       required: true,
     },
 
+    reply_message: {
+      type: String,
+      default: "",
+    },
+
     status: {
       type: String,
       enum: ["unread", "read", "replied"],
       default: "unread",
+    },
+    is_active: {
+      type: Boolean,
+      default: true,
+    },
+    deleted_at: {
+      type: Date,
+      default: null,
     },
   },
   {
