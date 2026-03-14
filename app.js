@@ -43,6 +43,9 @@ app.use(`${API_PREFIX}/user`, require("./src/routes/user.routes"));
 // Contact Routes
 app.use(`${API_PREFIX}/contact`, require("./src/routes/contact.routes"));
 
+// Review Routes
+app.use(`${API_PREFIX}/review`, require("./src/routes/review.routes"));
+
 /* ================= HEALTH CHECK ================= */
 
 app.get("/", (req, res) => {

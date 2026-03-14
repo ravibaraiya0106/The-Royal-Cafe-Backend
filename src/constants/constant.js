@@ -92,6 +92,13 @@ const MESSAGES = {
     DELETE_SUCCESS: "Contact message deleted successfully",
     NOT_FOUND: "Contact message not found",
   },
+  REVIEW: {
+    CREATE_SUCCESS: "Review created successfully",
+    FETCH_SUCCESS: "Reviews fetched successfully",
+    UPDATE_SUCCESS: "Review updated successfully",
+    DELETE_SUCCESS: "Review deleted successfully",
+    NOT_FOUND: "Review not found",
+  },
 };
 
 const VALIDATIONS = {
@@ -151,6 +158,12 @@ const VALIDATIONS = {
     NAME_MAX: "Category name must not exceed 100 characters",
 
     IS_ACTIVE_BOOLEAN: "is_active must be true or false",
+  },
+  REVIEW: {
+    PRODUCT_REQUIRED: "Product id is required",
+    RATING_REQUIRED: "Rating is required",
+    RATING_INVALID: "Rating must be between 1 and 5",
+    COMMENT_INVALID: "Comment must be a string",
   },
 };
 

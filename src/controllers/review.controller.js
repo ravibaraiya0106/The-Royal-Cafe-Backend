@@ -1,15 +1,16 @@
-const contactService = require("../services/contact.service");
+const reviewService = require("../services/review.service");
 const { sendResponse } = require("../utils/response");
 const { SUCCESS, STATUS_CODES, MESSAGES } = require("../constants/constant");
 
-/* ================= CREATE CONTACT ================= */
-const createContact = async (req, res) => {
+/* ================= CREATE REVIEW ================= */
+const createReview = async (req, res) => {
   try {
-    const contact = await contactService.createContact(req.body);
+    const userId = req.user.id;
+    const review = await reviewService.createReview(userId, req.body);
     return sendResponse(res, {
       success: SUCCESS.YES,
-      message: MESSAGES.CONTACT.CREATE_SUCCESS,
-      data: contact,
+      message: MESSAGES.REVIEW.CREATE_SUCCESS,
+      data: review,
       statusCode: STATUS_CODES.CREATED,
     });
   } catch (error) {
@@ -21,15 +22,15 @@ const createContact = async (req, res) => {
   }
 };
 
-/* ================= GET ALL CONTACT ================= */
-const getAllContacts = async (req, res) => {
+/* ================= GET ALL REVIEWS ================= */
+const getAllReviews = async (req, res) => {
   try {
-    const contacts = await contactService.getAllContacts();
+    const reviews = await reviewService.getAllReviews();
 
     return sendResponse(res, {
       success: SUCCESS.YES,
-      message: MESSAGES.CONTACT.FETCH_SUCCESS,
-      data: contacts,
+      message: MESSAGES.REVIEW.FETCH_SUCCESS,
+      data: reviews,
       statusCode: STATUS_CODES.OK,
     });
   } catch (error) {
@@ -41,38 +42,14 @@ const getAllContacts = async (req, res) => {
   }
 };
 
-/* ================= GET CONTACT ================= */
-const getContact = async (req, res) => {
+/* ================= GET REVIEW  ================= */
+const getReview = async (req, res) => {
   try {
-    const contact = await contactService.getContactById(req.params.id);
-
+    const review = await reviewService.getReviewById(req.params.id);
     return sendResponse(res, {
       success: SUCCESS.YES,
-      message: MESSAGES.CONTACT.FETCH_SUCCESS,
-      data: contact,
-      statusCode: STATUS_CODES.OK,
-    });
-  } catch (error) {
-    return sendResponse(res, {
-      success: SUCCESS.NO,
-      message: error.message || MESSAGES.CONTACT.NOT_FOUND,
-      statusCode: STATUS_CODES.BAD_REQUEST,
-    });
-  }
-};
-
-/* ================= REPLY CONTACT ================= */
-const replyContact = async (req, res) => {
-  console.log("body", req.body);
-  try {
-    const { id, reply_message } = req.body;
-
-    const contact = await contactService.replyContact(id, { reply_message });
-
-    return sendResponse(res, {
-      success: SUCCESS.YES,
-      message: MESSAGES.CONTACT.REPLY_SUCCESS,
-      data: contact,
+      message: MESSAGES.REVIEW.FETCH_SUCCESS,
+      data: review,
       statusCode: STATUS_CODES.OK,
     });
   } catch (error) {
@@ -84,13 +61,33 @@ const replyContact = async (req, res) => {
   }
 };
 
-/* ================= DELETE CONTACT ================= */
-const deleteContact = async (req, res) => {
+/* ================= UPDATE REVIEW ================= */
+const updateReview = async (req, res) => {
   try {
-    await contactService.deleteContact(req.params.id);
+    const review = await reviewService.updateReview(req.params.id, req.body);
+
     return sendResponse(res, {
       success: SUCCESS.YES,
-      message: MESSAGES.CONTACT.DELETE_SUCCESS,
+      message: MESSAGES.REVIEW.UPDATE_SUCCESS,
+      data: review,
+      statusCode: STATUS_CODES.OK,
+    });
+  } catch (error) {
+    return sendResponse(res, {
+      success: SUCCESS.NO,
+      message: error.message || MESSAGES.COMMON.SERVER_ERROR,
+      statusCode: STATUS_CODES.BAD_REQUEST,
+    });
+  }
+};
+
+/* ================= DELETE REVIEW ================= */
+const deleteReview = async (req, res) => {
+  try {
+    await reviewService.deleteReview(req.params.id);
+    return sendResponse(res, {
+      success: SUCCESS.YES,
+      message: MESSAGES.REVIEW.DELETE_SUCCESS,
       data: null,
       statusCode: STATUS_CODES.OK,
     });
@@ -104,9 +101,9 @@ const deleteContact = async (req, res) => {
 };
 
 module.exports = {
-  createContact,
-  getAllContacts,
-  getContact,
-  replyContact,
-  deleteContact,
+  createReview,
+  getAllReviews,
+  getReview,
+  updateReview,
+  deleteReview,
 };

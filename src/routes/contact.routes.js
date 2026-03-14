@@ -21,7 +21,7 @@ router.post(
 );
 
 /* ================= GET ALL CONTACT ================= */
-router.get("/list", authMiddleware, contactController.getContacts);
+router.get("/list", authMiddleware, contactController.getAllContacts);
 
 /* ================= GET CONTACT ================= */
 router.get("/:id", authMiddleware, contactController.getContact);
