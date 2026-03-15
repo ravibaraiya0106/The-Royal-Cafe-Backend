@@ -29,4 +29,15 @@ router.post(
 /* ================= LOGOUT USER ================= */
 router.post("/logout", upload.none(), authMiddleware, authController.logout);
 
+/* ================= RESET PASSWORD ================= */
+router.put(
+  "/reset-password",
+  upload.none(),
+  authMiddleware,
+  authController.resetPassword,
+);
+
+/* ================= FORGOT PASSWORD ================= */
+router.post("/forgot-password", upload.none(), authController.forgotPassword);
+
 module.exports = router;

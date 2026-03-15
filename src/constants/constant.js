@@ -58,6 +58,10 @@ const MESSAGES = {
     PASSWORD_REQUIRED: "Password is required",
     ACCOUNT_INACTIVE: "Account is inactive",
     UNAUTHORIZED_ACCESS: "Unauthorized access",
+    CHANGE_PASSWORD_SUCCESS: "Password changed successfully",
+    OLD_PASSWORD_INCORRECT: "Old password is incorrect",
+    NEW_PASSWORD_REQUIRED: "New password is required",
+    RESET_PASSWORD: "Password reset link sent to your email",
   },
 
   USER: {

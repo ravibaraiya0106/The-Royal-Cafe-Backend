@@ -6,6 +6,11 @@ const createLogger = require("../utils/logger");
 const authLogger = createLogger("auth");
 
 const { MESSAGES, ACCOUNT_STATUS, ROLES } = require("../constants/constant");
+const { plugin } = require("mongoose");
+const sendEmail = require("../utils/sendMail");
+const buildResetPasswordTemplate = require("../templates/resetPassword.template");
+const buildWelcomeTemplate = require("../templates/welcomeEmail.template");
+const crypto = require("crypto");
 
 /* ================= REGISTER USER ================= */
 
@@ -56,6 +61,12 @@ const registerUser = async (data = {}) => {
     role: role || ROLES.USER,
     is_active: ACCOUNT_STATUS.ACTIVE,
   });
+
+  const welcomeTemplate = buildWelcomeTemplate(user.username);
+  await sendEmail(user.email, "Welcome to Royal Cafe", welcomeTemplate);
+  user.welcome_email_sent = true;
+  user.welcome_email_sent_at = new Date();
+  await user.save();
   authLogger.info("User created successfully", user);
 
   /* Remove password before returning */
@@ -129,8 +140,52 @@ const logoutUser = async (token) => {
   return true;
 };
 
+/* ================= RESET PASSWORD ================= */
+const resetPassword = async (userId, old_password, new_password) => {
+  if (!new_password) {
+    throw new Error(MESSAGES.AUTH.NEW_PASSWORD_REQUIRED);
+  }
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new Error(MESSAGES.USER.NOT_FOUND);
+  }
+
+  const isMatch = await bcrypt.compare(old_password, user.password);
+  if (!isMatch) {
+    throw new Error(MESSAGES.AUTH.OLD_PASSWORD_INCORRECT);
+  }
+
+  const hashedPassword = await bcrypt.hash(new_password, 10);
+  user.password = hashedPassword;
+  await user.save();
+
+  return true;
+};
+
+/* ================= FORGOT PASSWORD ================= */
+const forgotPassword = async (email) => {
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new Error(MESSAGES.USER.NOT_FOUND);
+  }
+
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  user.reset_password_token = resetToken;
+  user.reset_password_expires = Date.now() + 15 * 60 * 1000;
+
+  await user.save();
+  const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+  const html = buildResetPasswordTemplate(resetLink, user.username);
+
+  await sendEmail(user.email, "Reset Your Royal Cafe Password", html);
+
+  return true;
+};
+
 module.exports = {
   registerUser,
   loginUser,
   logoutUser,
+  resetPassword,
+  forgotPassword,
 };

@@ -51,6 +51,22 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    reset_password_token: {
+      type: String,
+      default: null,
+    },
+    reset_password_expires: {
+      type: Date,
+      default: null,
+    },
+    welcome_email_sent: {
+      type: Boolean,
+      default: false,
+    },
+    welcome_email_sent_at: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
