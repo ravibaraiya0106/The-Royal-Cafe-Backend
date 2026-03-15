@@ -9,7 +9,7 @@ const createProduct = async (data = {}) => {
   const existing = await Product.findOne({
     name,
     category,
-    deleted_at: null,
+    is_active: true,
   });
 
   if (existing) {
@@ -24,9 +24,7 @@ const createProduct = async (data = {}) => {
 /* ================= GET ALL PRODUCTS ================= */
 
 const getAllProducts = async () => {
-  const products = await Product.find({
-    deleted_at: null,
-  })
+  const products = await Product.find({ is_active: true })
     .populate("category", "name")
     .sort({ createdAt: -1 });
 
@@ -38,7 +36,7 @@ const getAllProducts = async () => {
 const getProductById = async (id) => {
   const product = await Product.findOne({
     _id: id,
-    deleted_at: null,
+    is_active: true,
   }).populate("category", "name");
 
   if (!product) {
@@ -52,7 +50,7 @@ const getProductById = async (id) => {
 
 const updateProduct = async (id, data = {}) => {
   const product = await Product.findOneAndUpdate(
-    { _id: id, deleted_at: null },
+    { _id: id, is_active: true },
     data,
     { new: true },
   );
@@ -68,7 +66,7 @@ const updateProduct = async (id, data = {}) => {
 
 const deleteProduct = async (id) => {
   const product = await Product.findOneAndUpdate(
-    { _id: id, deleted_at: null },
+    { _id: id, is_active: true },
     { deleted_at: new Date(), is_active: false },
     { new: true },
   );

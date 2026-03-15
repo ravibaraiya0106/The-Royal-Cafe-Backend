@@ -10,7 +10,7 @@ const upload = multer();
 
 /* ================= ADD TO CART ================= */
 router.post(
-  "/add",
+  "/create",
   upload.none(),
   authMiddleware,
   validate(addToCartValidation),

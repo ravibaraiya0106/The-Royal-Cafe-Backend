@@ -112,6 +112,14 @@ const MESSAGES = {
     PRODUCT_REQUIRED: "Product is required",
     COUNT_SUCCESS: "Cart count fetched successfully",
   },
+  COUPON: {
+    CREATE_SUCCESS: "Coupon created successfully",
+    UPDATE_SUCCESS: "Coupon updated successfully",
+    DELETE_SUCCESS: "Coupon deleted successfully",
+    FETCH_SUCCESS: "Coupons fetched successfully",
+    NOT_FOUND: "Coupon not found",
+    ALREADY_EXISTS: "Coupon already exists",
+  },
 };
 
 const VALIDATIONS = {
@@ -170,6 +178,9 @@ const VALIDATIONS = {
     QUANTITY_REQUIRED: "Quantity is required",
     QUANTITY_INVALID: "Quantity must be a number",
     QUANTITY_MIN: "Quantity must be at least 1",
+  },
+  COUPON: {
+    CODE_REQUIRED: "Coupon code is required",
   },
 };
 

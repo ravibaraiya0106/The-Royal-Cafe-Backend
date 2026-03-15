@@ -49,6 +49,9 @@ app.use(`${API_PREFIX}/review`, require("./src/routes/review.routes"));
 // Cart Routes
 app.use(`${API_PREFIX}/cart`, require("./src/routes/cart.routes"));
 
+// Coupon Routes
+app.use(`${API_PREFIX}/coupon`, require("./src/routes/coupon.routes"));
+
 /* ================= HEALTH CHECK ================= */
 
 app.get("/", (req, res) => {

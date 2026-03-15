@@ -7,7 +7,6 @@ const { MESSAGES } = require("../constants/constant");
 const addToCart = async (userId, data = {}) => {
   const product = await Product.findOne({
     _id: data.product,
-    deleted_at: null,
     is_active: true,
   });
 
@@ -18,7 +17,6 @@ const addToCart = async (userId, data = {}) => {
   const existingItem = await Cart.findOne({
     user: userId,
     product: data.product,
-    deleted_at: null,
     is_active: true,
   });
 
@@ -43,7 +41,6 @@ const addToCart = async (userId, data = {}) => {
 const getUserCart = async (userId) => {
   const cartItems = await Cart.find({
     user: userId,
-    deleted_at: null,
     is_active: true,
   })
     .populate("product", "name price image")
@@ -59,7 +56,6 @@ const removeToCart = async (userId, id = null) => {
   console.log("user id ", userId, "id", id);
   const cartItem = await Cart.findOne({
     _id: id,
-    deleted_at: null,
     is_active: true,
     user: userId,
   });
@@ -83,7 +79,7 @@ const removeToCart = async (userId, id = null) => {
 /* ================= REMOVE ITEM ================= */
 const removeFromCart = async (id = null) => {
   const cartItem = await Cart.findOneAndUpdate(
-    { _id: id, deleted_at: null, is_active: true },
+    { _id: id, is_active: true },
     { deleted_at: new Date(), is_active: false },
     { new: true },
   );
@@ -97,7 +93,7 @@ const removeFromCart = async (id = null) => {
 /* ================= CLEAR CART ================= */
 const clearCart = async (userId) => {
   const cartItems = await Cart.updateMany(
-    { user: userId, deleted_at: null, is_active: true },
+    { user: userId, is_active: true },
     { deleted_at: new Date(), is_active: false },
   );
 
@@ -113,7 +109,6 @@ const userCartCount = async (userId) => {
     {
       $match: {
         user: new mongoose.Types.ObjectId(userId),
-        deleted_at: null,
         is_active: true,
       },
     },

@@ -8,7 +8,6 @@ const createCategory = async (data = {}) => {
 
   const existing = await Category.findOne({
     name,
-    deleted_at: null,
     is_active: true,
   });
 
@@ -24,7 +23,7 @@ const createCategory = async (data = {}) => {
 /* ================= GET ALL CATEGORY ================= */
 
 const getAllCategories = async () => {
-  const categories = await Category.find({ deleted_at: null, is_active: true });
+  const categories = await Category.find({ is_active: true });
 
   return categories;
 };
@@ -34,7 +33,6 @@ const getAllCategories = async () => {
 const getCategoryById = async (id = null) => {
   const category = await Category.findOne({
     _id: id,
-    deleted_at: null,
     is_active: true,
   });
 
@@ -49,7 +47,7 @@ const getCategoryById = async (id = null) => {
 
 const updateCategory = async (id = null, data = {}) => {
   const category = await Category.findOneAndUpdate(
-    { _id: id, deleted_at: null, is_active: true },
+    { _id: id, is_active: true },
     data,
     { new: true },
   );

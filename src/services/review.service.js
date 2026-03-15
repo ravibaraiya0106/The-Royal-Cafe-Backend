@@ -15,7 +15,6 @@ const createReview = async (userId, data = {}) => {
 /* ================= GET ALL REVIEWS ================= */
 const getAllReviews = async () => {
   const reviews = await Review.find({
-    deleted_at: null,
     is_active: true,
   })
     .populate("user", "username")
@@ -28,7 +27,6 @@ const getAllReviews = async () => {
 const getReviewById = async (id = null) => {
   const review = await Review.findOne({
     _id: id,
-    deleted_at: null,
     is_active: true,
   })
     .populate("user", "username")
@@ -42,7 +40,7 @@ const getReviewById = async (id = null) => {
 /* ================= UPDATE REVIEW ================= */
 const updateReview = async (id = null, data = {}) => {
   const review = await Review.findOneAndUpdate(
-    { _id: id, deleted_at: null, is_active: true },
+    { _id: id, is_active: true },
     {
       rating: data.rating,
       comment: data.comment,

@@ -10,7 +10,6 @@ const createContact = async (data = {}) => {
 /* ================= GET ALL CONTACT ================= */
 const getAllContacts = async () => {
   const contacts = await Contact.find({
-    deleted_at: null,
     is_active: true,
   }).sort({ createdAt: -1 });
   return contacts;
@@ -19,7 +18,7 @@ const getAllContacts = async () => {
 /* ================= GET CONTACT ================= */
 const getContactById = async (id = null) => {
   const contact = await Contact.findOneAndUpdate(
-    { _id: id, deleted_at: null, is_active: true },
+    { _id: id, is_active: true },
     { status: "read" },
     { new: true },
   );
@@ -32,7 +31,7 @@ const getContactById = async (id = null) => {
 /* ================= REPLY CONTACT ================= */
 const replyContact = async (id = null, data = {}) => {
   const contact = await Contact.findOneAndUpdate(
-    { _id: id, deleted_at: null, is_active: true },
+    { _id: id, is_active: true },
     {
       reply_message: data.reply_message,
       status: "replied",

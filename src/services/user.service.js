@@ -6,7 +6,7 @@ const { MESSAGES } = require("../constants/constant");
 
 const getAllUsers = async () => {
   const users = await User.find({
-    deleted_at: null,
+    is_active: true,
   }).select("-password");
 
   return users;
@@ -17,7 +17,7 @@ const getAllUsers = async () => {
 const getUserById = async (id) => {
   const user = await User.findOne({
     _id: id,
-    deleted_at: null,
+    is_active: true,
   }).select("-password");
 
   if (!user) {
@@ -33,7 +33,7 @@ const updateUser = async (id, data = {}) => {
   const user = await User.findOneAndUpdate(
     {
       _id: id,
-      deleted_at: null,
+      is_active: true,
     },
     data,
     { new: true },
