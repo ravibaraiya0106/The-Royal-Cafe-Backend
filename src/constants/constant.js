@@ -99,6 +99,19 @@ const MESSAGES = {
     DELETE_SUCCESS: "Review deleted successfully",
     NOT_FOUND: "Review not found",
   },
+  CART: {
+    ADD_SUCCESS: "Product added to cart successfully",
+    REMOVE_SUCCESS: "Product removed from cart successfully",
+    FETCH_SUCCESS: "Cart fetched successfully",
+    UPDATE_SUCCESS: "Cart updated successfully",
+    DELETE_SUCCESS: "Cart item removed successfully",
+    CLEAR_SUCCESS: "Cart cleared successfully",
+    COUNT_FETCH_SUCCESS: "Cart count fetched successfully",
+    NOT_FOUND: "Cart item not found",
+    ALREADY_EXISTS: "Product already exists in cart",
+    PRODUCT_REQUIRED: "Product is required",
+    COUNT_SUCCESS: "Cart count fetched successfully",
+  },
 };
 
 const VALIDATIONS = {
@@ -106,36 +119,26 @@ const VALIDATIONS = {
     USERNAME_REQUIRED: "Username is required",
     USERNAME_MIN: "Username must be at least 3 characters",
     USERNAME_MAX: "Username must not exceed 30 characters",
-
     FIRST_NAME_REQUIRED: "First name is required",
     FIRST_NAME_MIN: "First name must be at least 2 characters",
     FIRST_NAME_MAX: "First name must not exceed 50 characters",
-
     LAST_NAME_MAX: "Last name must not exceed 50 characters",
-
     EMAIL_REQUIRED: "Email is required",
     EMAIL_INVALID: "Invalid email format",
-
     PHONE_REQUIRED: "Phone number is required",
     PHONE_INVALID: "Phone number must be between 10-15 digits",
-
     PASSWORD_REQUIRED: "Password is required",
     PASSWORD_MIN: "Password must be at least 6 characters",
-
     ROLE_INVALID: "Invalid user role",
-
     IS_ACTIVE_BOOLEAN: "is_active must be true or false",
   },
   PRODUCT: {
     NAME_REQUIRED: "Product name is required",
     NAME_MIN: "Product name must be at least 2 characters",
     NAME_MAX: "Product name must not exceed 100 characters",
-
     CATEGORY_REQUIRED: "Category is required",
-
     PRICE_REQUIRED: "Product price is required",
     PRICE_MIN: "Product price must be greater than or equal to 0",
-
     IS_SPECIAL_BOOLEAN: "is_special must be true or false",
     IS_AVAILABLE_BOOLEAN: "is_available must be true or false",
   },
@@ -143,12 +146,9 @@ const VALIDATIONS = {
     NAME_REQUIRED: "Name is required",
     NAME_MIN: "Name must be at least 2 characters",
     NAME_MAX: "Name must not exceed 50 characters",
-
     EMAIL_REQUIRED: "Email is required",
     EMAIL_INVALID: "Invalid email format",
-
     MESSAGE_REQUIRED: "Message is required",
-
     REPLY_REQUIRED: "Reply message is required",
     ID_REQUIRED: "ID is required",
   },
@@ -156,7 +156,6 @@ const VALIDATIONS = {
     NAME_REQUIRED: "Category name is required",
     NAME_MIN: "Category name must be at least 2 characters",
     NAME_MAX: "Category name must not exceed 100 characters",
-
     IS_ACTIVE_BOOLEAN: "is_active must be true or false",
   },
   REVIEW: {
@@ -164,6 +163,13 @@ const VALIDATIONS = {
     RATING_REQUIRED: "Rating is required",
     RATING_INVALID: "Rating must be between 1 and 5",
     COMMENT_INVALID: "Comment must be a string",
+  },
+  CART: {
+    PRODUCT_REQUIRED: "Product id is required",
+    PRODUCT_INVALID: "Invalid product id",
+    QUANTITY_REQUIRED: "Quantity is required",
+    QUANTITY_INVALID: "Quantity must be a number",
+    QUANTITY_MIN: "Quantity must be at least 1",
   },
 };
 
