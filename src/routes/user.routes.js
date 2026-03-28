@@ -7,15 +7,15 @@ const authMiddleware = require("../middlewares/auth.middleware");
 const validate = require("../middlewares/validation.middleware");
 const { updateUserValidation } = require("../validations/user.validation");
 
-/* ================= GET ALL PRODUCTS ================= */
+/* ================= GET ALL USERS ================= */
 
 router.get("/list", authMiddleware, userController.getAllUsers);
 
-/* ================= GET PRODUCT BY ID ================= */
+/* ================= GET USER BY ID ================= */
 
 router.get("/:id", authMiddleware, userController.getProfile);
 
-/* ================= UPDATE PRODUCT ================= */
+/* ================= UPDATE USER ================= */
 
 router.put(
   "/update/:id",
@@ -25,7 +25,7 @@ router.put(
   userController.updateUser,
 );
 
-/* ================= DELETE PRODUCT ================= */
+/* ================= DELETE USER ================= */
 
 router.delete("/delete/:id", authMiddleware, userController.deleteUser);
 

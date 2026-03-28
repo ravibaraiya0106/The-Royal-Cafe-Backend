@@ -9,7 +9,8 @@ const deliverySchema = new mongoose.Schema(
     },
 
     delivery_person: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "DeliveryPerson",
       required: true,
     },
 

@@ -53,6 +53,12 @@ app.use(`${API_PREFIX}/cart`, require("./src/routes/cart.routes"));
 // Coupon Routes
 app.use(`${API_PREFIX}/coupon`, require("./src/routes/coupon.routes"));
 
+// Delivery Persions
+app.use(
+  `${API_PREFIX}/delivery-persion`,
+  require("./src/routes/deliveryPerson.routes"),
+);
+
 /* ================= HEALTH CHECK ================= */
 
 app.get("/", (req, res) => {

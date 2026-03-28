@@ -62,6 +62,8 @@ const MESSAGES = {
     OLD_PASSWORD_INCORRECT: "Old password is incorrect",
     NEW_PASSWORD_REQUIRED: "New password is required",
     RESET_PASSWORD: "Password reset link sent to your email",
+    TOKEN_EXPIRED: "Session expired. Please login again",
+    INVALID_TOKEN: "Invalid token",
   },
 
   USER: {
@@ -123,6 +125,14 @@ const MESSAGES = {
     FETCH_SUCCESS: "Coupons fetched successfully",
     NOT_FOUND: "Coupon not found",
     ALREADY_EXISTS: "Coupon already exists",
+  },
+  DELIVERY_PERSON: {
+    CREATED: "Delivery person created successfully",
+    FETCH_SUCCESS: "Delivery persons fetched successfully",
+    FETCH_SINGLE_SUCCESS: "Delivery person fetched successfully",
+    UPDATED: "Delivery person updated successfully",
+    DELETED: "Delivery person deleted successfully",
+    NOT_FOUND: "Delivery person not found",
   },
 };
 
