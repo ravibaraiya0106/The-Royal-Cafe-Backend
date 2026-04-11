@@ -34,7 +34,7 @@ const productImageStorage = multer.diskStorage({
   },
 });
 
-const uploadCategoryImage = multer({ categoryImageStorage });
-const uploadProductImage = multer({ productImageStorage });
+const uploadCategoryImage = multer({ storage: categoryImageStorage });
+const uploadProductImage = multer({ storage: productImageStorage });
 
 module.exports = { uploadCategoryImage, uploadProductImage };

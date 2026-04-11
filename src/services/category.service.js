@@ -22,8 +22,44 @@ const createCategory = async (data = {}) => {
 
 /* ================= GET ALL CATEGORY ================= */
 
-const getAllCategories = async () => {
-  const categories = await Category.find({ is_active: true });
+const getAllCategories = async (query = {}) => {
+  const { page = 1, limit = 10, name } = query;
+
+  const parsedPage = Number(page);
+  const parsedLimit = Number(limit);
+
+  const skip = (parsedPage - 1) * parsedLimit;
+
+  const filter = { is_active: true };
+
+  // Name search (multi-word search)
+  if (name) {
+    const words = name.trim().split(/\s+/);
+
+    filter.$and = words.map((word) => ({
+      name: { $regex: word, $options: "i" },
+    }));
+  }
+
+  const [categories, total] = await Promise.all([
+    Category.find(filter).sort({ createdAt: -1 }).skip(skip).limit(parsedLimit),
+
+    Category.countDocuments(filter),
+  ]);
+
+  return {
+    data: categories,
+    total,
+    page: parsedPage,
+    limit: parsedLimit,
+    totalPages: Math.ceil(total / parsedLimit),
+  };
+};
+
+/* ================= GET CATEGORY DROPDOWN ================= */
+
+const getCategoryDropdown = async () => {
+  const categories = await Category.find({ is_active: true }, { name: 1 });
 
   return categories;
 };
@@ -81,4 +117,5 @@ module.exports = {
   getCategoryById,
   updateCategory,
   deleteCategory,
+  getCategoryDropdown,
 };

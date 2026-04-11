@@ -23,12 +23,51 @@ const createProduct = async (data = {}) => {
 
 /* ================= GET ALL PRODUCTS ================= */
 
-const getAllProducts = async () => {
-  const products = await Product.find({ is_active: true })
-    .populate("category", "name")
-    .sort({ createdAt: -1 });
+const getAllProducts = async (query) => {
+  const { page = 1, limit = 10, name, category, is_special } = query;
 
-  return products;
+  const parsedPage = Number(page);
+  const parsedLimit = Number(limit);
+
+  const skip = (parsedPage - 1) * parsedLimit;
+
+  const filter = {
+    is_active: true,
+  };
+
+  if (name) {
+    const words = name.trim().split(/\s+/);
+
+    filter.$and = words.map((word) => ({
+      name: { $regex: word, $options: "i" },
+    }));
+  }
+
+  if (category) {
+    filter.category = category; // expect category ID
+  }
+
+  if (is_special !== undefined && is_special !== "") {
+    filter.is_special = is_special === "true";
+  }
+
+  const [products, total] = await Promise.all([
+    Product.find(filter)
+      .populate("category", "name")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parsedLimit),
+
+    Product.countDocuments(filter),
+  ]);
+
+  return {
+    data: products,
+    total,
+    page: parsedPage,
+    limit: parsedLimit,
+    totalPages: Math.ceil(total / parsedLimit),
+  };
 };
 
 /* ================= GET PRODUCT BY ID ================= */

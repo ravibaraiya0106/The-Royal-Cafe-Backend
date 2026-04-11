@@ -9,11 +9,18 @@ const { SUCCESS, STATUS_CODES, MESSAGES } = require("./src/constants/constant");
 const app = express();
 
 /* Security */
-app.use(helmet());
-
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false, //  allow images cross origin
+  }),
+);
 /* CORS */
-app.use(cors());
-
+app.use(
+  cors({
+    origin: "http://localhost:5173", // your Vite app
+    credentials: true,
+  }),
+);
 /* Logging */
 app.use(morgan("dev"));
 

@@ -34,7 +34,7 @@ const createProduct = async (req, res) => {
 
 const getAllProducts = async (req, res) => {
   try {
-    const products = await productService.getAllProducts();
+    const products = await productService.getAllProducts(req.query);
 
     return sendResponse(res, {
       success: SUCCESS.YES,

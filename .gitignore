@@ -9,4 +9,6 @@ logs/
 # package-lock 
 package-lock.json
 # upload
-upload/
+uploads/
+
+

@@ -39,8 +39,27 @@ const createCategory = async (req, res) => {
 
 const getCategories = async (req, res) => {
   try {
-    const categories = await categoryService.getAllCategories();
+    const categories = await categoryService.getAllCategories(req.query);
 
+    return sendResponse(res, {
+      success: SUCCESS.YES,
+      message: MESSAGES.CATEGORY.LIST,
+      data: categories,
+      statusCode: STATUS_CODES.OK,
+    });
+  } catch (error) {
+    return sendResponse(res, {
+      success: SUCCESS.NO,
+      message: error.message || MESSAGES.COMMON.SERVER_ERROR,
+      statusCode: STATUS_CODES.SERVER_ERROR,
+    });
+  }
+};
+
+/* ================= GET CATEGORY DROPDOWN ================= */
+const getCategoryDropdown = async (req, res) => {
+  try {
+    const categories = await categoryService.getCategoryDropdown();
     return sendResponse(res, {
       success: SUCCESS.YES,
       message: MESSAGES.CATEGORY.LIST,
@@ -131,4 +150,5 @@ module.exports = {
   getCategory,
   updateCategory,
   deleteCategory,
+  getCategoryDropdown,
 };
