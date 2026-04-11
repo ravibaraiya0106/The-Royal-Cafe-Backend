@@ -25,7 +25,7 @@ const createReview = async (req, res) => {
 /* ================= GET ALL REVIEWS ================= */
 const getAllReviews = async (req, res) => {
   try {
-    const reviews = await reviewService.getAllReviews();
+    const reviews = await reviewService.getAllReviews(req.query);
 
     return sendResponse(res, {
       success: SUCCESS.YES,

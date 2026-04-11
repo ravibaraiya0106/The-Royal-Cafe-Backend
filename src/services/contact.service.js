@@ -8,11 +8,58 @@ const createContact = async (data = {}) => {
 };
 
 /* ================= GET ALL CONTACT ================= */
-const getAllContacts = async () => {
-  const contacts = await Contact.find({
+const getAllContacts = async (query = {}) => {
+  const { page = 1, limit = 10, name, email, phone, subject, status } = query;
+
+  const parsedPage = Number(page);
+  const parsedLimit = Number(limit);
+
+  const skip = (parsedPage - 1) * parsedLimit;
+
+  /* ================= FILTER ================= */
+  const filter = {
     is_active: true,
-  }).sort({ createdAt: -1 });
-  return contacts;
+  };
+
+  /* NAME SEARCH */
+  if (name) {
+    filter.name = { $regex: name, $options: "i" };
+  }
+
+  /* EMAIL SEARCH */
+  if (email) {
+    filter.email = { $regex: email, $options: "i" };
+  }
+
+  /* PHONE SEARCH */
+  if (phone) {
+    filter.phone = { $regex: phone, $options: "i" };
+  }
+
+  /* SUBJECT SEARCH */
+  if (subject) {
+    filter.subject = { $regex: subject, $options: "i" };
+  }
+
+  /* STATUS FILTER */
+  if (status) {
+    filter.status = status; // unread | read | replied
+  }
+
+  /* ================= FETCH ================= */
+  const [contacts, total] = await Promise.all([
+    Contact.find(filter).sort({ createdAt: -1 }).skip(skip).limit(parsedLimit),
+
+    Contact.countDocuments(filter),
+  ]);
+
+  return {
+    data: contacts,
+    total,
+    page: parsedPage,
+    limit: parsedLimit,
+    totalPages: Math.ceil(total / parsedLimit),
+  };
 };
 
 /* ================= GET CONTACT ================= */

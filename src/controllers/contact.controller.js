@@ -24,7 +24,7 @@ const createContact = async (req, res) => {
 /* ================= GET ALL CONTACT ================= */
 const getAllContacts = async (req, res) => {
   try {
-    const contacts = await contactService.getAllContacts();
+    const contacts = await contactService.getAllContacts(req.query);
 
     return sendResponse(res, {
       success: SUCCESS.YES,

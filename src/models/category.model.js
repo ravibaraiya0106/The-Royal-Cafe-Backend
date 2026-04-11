@@ -42,7 +42,21 @@ const categorySchema = new mongoose.Schema(
     timestamps: true,
   },
 );
+categorySchema.index(
+  { name: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { is_active: true },
+  },
+);
 
+categorySchema.index(
+  { slug: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { is_active: true },
+  },
+);
 /* Auto generate slug before save */
 categorySchema.pre("save", async function () {
   if (this.name) {
@@ -59,4 +73,5 @@ categorySchema.pre("findOneAndUpdate", async function () {
     this.setUpdate(update);
   }
 });
+
 module.exports = mongoose.model("Category", categorySchema);

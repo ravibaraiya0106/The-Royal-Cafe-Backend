@@ -30,7 +30,7 @@ const getProfile = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
   try {
-    const users = await userService.getAllUsers();
+    const users = await userService.getAllUsers(req.query);
 
     return sendResponse(res, {
       success: SUCCESS.YES,

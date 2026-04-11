@@ -13,14 +13,96 @@ const createReview = async (userId, data = {}) => {
 };
 
 /* ================= GET ALL REVIEWS ================= */
-const getAllReviews = async () => {
-  const reviews = await Review.find({
-    is_active: true,
-  })
-    .populate("user", "username")
-    .populate("product", "name")
-    .sort({ createdAt: -1 });
-  return reviews;
+const getAllReviews = async (query = {}) => {
+  const { page = 1, limit = 10, username, email, product, rating } = query;
+
+  const parsedPage = Number(page);
+  const parsedLimit = Number(limit);
+  const skip = (parsedPage - 1) * parsedLimit;
+
+  const match = { is_active: true };
+
+  if (rating) match.rating = Number(rating);
+
+  const pipeline = [
+    { $match: match },
+
+    /* JOIN USER */
+    {
+      $lookup: {
+        from: "users",
+        localField: "user",
+        foreignField: "_id",
+        as: "user",
+      },
+    },
+    { $unwind: "$user" },
+
+    /* JOIN PRODUCT */
+    {
+      $lookup: {
+        from: "products",
+        localField: "product",
+        foreignField: "_id",
+        as: "product",
+      },
+    },
+    { $unwind: "$product" },
+
+    /* USER FILTER */
+    ...(username
+      ? [
+          {
+            $match: {
+              "user.username": { $regex: username, $options: "i" },
+            },
+          },
+        ]
+      : []),
+
+    ...(email
+      ? [
+          {
+            $match: {
+              "user.email": { $regex: email, $options: "i" },
+            },
+          },
+        ]
+      : []),
+
+    /* PRODUCT FILTER */
+    ...(product
+      ? [
+          {
+            $match: {
+              "product.name": { $regex: product, $options: "i" },
+            },
+          },
+        ]
+      : []),
+
+    { $sort: { createdAt: -1 } },
+
+    {
+      $facet: {
+        data: [{ $skip: skip }, { $limit: parsedLimit }],
+        totalCount: [{ $count: "count" }],
+      },
+    },
+  ];
+
+  const result = await Review.aggregate(pipeline);
+
+  const data = result[0].data;
+  const total = result[0].totalCount[0]?.count || 0;
+
+  return {
+    data,
+    total,
+    page: parsedPage,
+    limit: parsedLimit,
+    totalPages: Math.ceil(total / parsedLimit),
+  };
 };
 
 /* ================= GET REVIEW BY ID ================= */
