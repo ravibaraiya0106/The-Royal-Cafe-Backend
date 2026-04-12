@@ -39,7 +39,7 @@ const createCouponValidation = Joi.object({
 const updateCouponValidation = Joi.object({
   ...baseCouponSchema,
 }).min(1);
-// ✅ At least one field required for update
+//  At least one field required for update
 
 module.exports = {
   createCouponValidation,

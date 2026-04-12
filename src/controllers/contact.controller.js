@@ -63,11 +63,13 @@ const getContact = async (req, res) => {
 
 /* ================= REPLY CONTACT ================= */
 const replyContact = async (req, res) => {
-  console.log("body", req.body);
   try {
-    const { id, reply_message } = req.body;
+    const { reply_message } = req.body;
+    const { id } = req.params; //  correct source
 
-    const contact = await contactService.replyContact(id, { reply_message });
+    const contact = await contactService.replyContact(id, {
+      reply_message,
+    });
 
     return sendResponse(res, {
       success: SUCCESS.YES,

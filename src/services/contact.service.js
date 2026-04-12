@@ -62,17 +62,25 @@ const getAllContacts = async (query = {}) => {
   };
 };
 
-/* ================= GET CONTACT ================= */
 const getContactById = async (id = null) => {
   const contact = await Contact.findOneAndUpdate(
-    { _id: id, is_active: true },
+    { _id: id, is_active: true, status: "unread" }, //  condition
     { status: "read" },
     { new: true },
   );
-  if (!contact) {
+
+  if (contact) return contact;
+
+  const existingContact = await Contact.findOne({
+    _id: id,
+    is_active: true,
+  });
+
+  if (!existingContact) {
     throw new Error(MESSAGES.CONTACT.NOT_FOUND);
   }
-  return contact;
+
+  return existingContact;
 };
 
 /* ================= REPLY CONTACT ================= */

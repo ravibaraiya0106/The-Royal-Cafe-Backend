@@ -27,9 +27,6 @@ const createContactValidation = Joi.object({
 /* ================= REPLY CONTACT VALIDATIONS ================= */
 
 const replyContactValidation = Joi.object({
-  id: Joi.string().required().messages({
-    "string.empty": VALIDATIONS.CONTACT.ID_REQUIRED,
-  }),
   reply_message: Joi.string().required().messages({
     "string.empty": VALIDATIONS.CONTACT.REPLY_REQUIRED,
   }),

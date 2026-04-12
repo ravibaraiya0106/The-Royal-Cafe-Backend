@@ -28,7 +28,7 @@ router.get("/:id", authMiddleware, contactController.getContact);
 
 /* ================= REPLY CONTACT ================= */
 router.put(
-  "/reply",
+  "/reply/:id",
   upload.none(),
   authMiddleware,
   validate(replyContactValidation),
