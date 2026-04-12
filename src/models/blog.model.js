@@ -15,7 +15,7 @@ const blogSchema = new mongoose.Schema(
       lowercase: true,
     },
 
-    description: {
+    content: {
       type: String,
       required: true,
     },

@@ -1,11 +1,21 @@
 const blogService = require("../services/blog.service");
 const { sendResponse } = require("../utils/response");
-const { SUCCESS, STATUS_CODES, MESSAGES } = require("../constants/constant");
+const {
+  SUCCESS,
+  STATUS_CODES,
+  MESSAGES,
+  PATHS,
+} = require("../constants/constant");
 
 /* CREATE */
 const createBlog = async (req, res) => {
   try {
-    const blog = await blogService.createBlog(req.body);
+    const data = req.body;
+
+    if (req.file) {
+      data.image = `${PATHS.BLOG_IMAGE_PUBLIC}/${req.file.filename}`;
+    }
+    const blog = await blogService.createBlog(data);
 
     return sendResponse(res, {
       success: SUCCESS.YES,
@@ -65,7 +75,13 @@ const getBlog = async (req, res) => {
 /* UPDATE */
 const updateBlog = async (req, res) => {
   try {
-    const blog = await blogService.updateBlog(req.params.id, req.body);
+    const { id } = req.params;
+    const data = req.body;
+
+    if (req.file) {
+      data.image = `${PATHS.BLOG_IMAGE_PUBLIC}/${req.file.filename}`;
+    }
+    const blog = await blogService.updateBlog(id, data);
 
     return sendResponse(res, {
       success: SUCCESS.YES,
