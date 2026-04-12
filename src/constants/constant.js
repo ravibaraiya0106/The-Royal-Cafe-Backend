@@ -10,6 +10,8 @@ const PATHS = {
   CATEGORY_IMAGE_PUBLIC: "/uploads/categories",
   PRODUCT_IMAGE_UPLOAD: "uploads/products",
   PRODUCT_IMAGE_PUBLIC: "/uploads/products",
+  BLOG_IMAGE_UPLOAD: "uploads/blogs",
+  BLOG_IMAGE_PUBLIC: "/uploads/blogs",
 };
 
 /* User Roles */
@@ -134,6 +136,13 @@ const MESSAGES = {
     DELETED: "Delivery person deleted successfully",
     NOT_FOUND: "Delivery person not found",
   },
+  BLOG: {
+    CREATE_SUCCESS: "Blog created successfully",
+    FETCH_SUCCESS: "Blogs fetched successfully",
+    UPDATE_SUCCESS: "Blog updated successfully",
+    DELETE_SUCCESS: "Blog deleted successfully",
+    NOT_FOUND: "Blog not found",
+  },
 };
 
 const VALIDATIONS = {
@@ -195,6 +204,10 @@ const VALIDATIONS = {
   },
   COUPON: {
     CODE_REQUIRED: "Coupon code is required",
+  },
+  BLOG: {
+    TITLE_REQUIRED: "Blog title is required",
+    DESCRIPTION_REQUIRED: "Blog description is required",
   },
 };
 

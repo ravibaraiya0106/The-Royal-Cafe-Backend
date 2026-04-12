@@ -12,6 +12,10 @@ if (!fs.existsSync(PATHS.PRODUCT_IMAGE_UPLOAD)) {
   fs.mkdirSync(PATHS.PRODUCT_IMAGE_UPLOAD, { recursive: true });
 }
 
+if (!fs.existsSync(PATHS.BLOG_IMAGE_UPLOAD)) {
+  fs.mkdirSync(PATHS.BLOG_IMAGE_UPLOAD, { recursive: true });
+}
+
 const categoryImageStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, PATHS.CATEGORY_IMAGE_UPLOAD);
@@ -34,7 +38,18 @@ const productImageStorage = multer.diskStorage({
   },
 });
 
+const blogImageStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, PATHS.BLOG_IMAGE_UPLOAD);
+  },
+
+  filename: (req, file, cb) => {
+    const fileName = Date.now() + path.extname(file.originalname);
+    cb(null, fileName);
+  },
+});
 const uploadCategoryImage = multer({ storage: categoryImageStorage });
 const uploadProductImage = multer({ storage: productImageStorage });
+const uploadBlogImage = multer({ storage: blogImageStorage });
 
-module.exports = { uploadCategoryImage, uploadProductImage };
+module.exports = { uploadCategoryImage, uploadProductImage, uploadBlogImage };

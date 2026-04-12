@@ -66,6 +66,8 @@ app.use(
   require("./src/routes/deliveryPerson.routes"),
 );
 
+// Blogs
+app.use(`${API_PREFIX}/blog`, require("./src/routes/blog.routes"));
 /* ================= HEALTH CHECK ================= */
 
 app.get("/", (req, res) => {
