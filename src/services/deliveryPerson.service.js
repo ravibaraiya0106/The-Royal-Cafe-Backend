@@ -27,12 +27,71 @@ const createDeliveryPerson = async (data = {}) => {
 
 /* ================= GET DELIVERY PERSONS ================= */
 
-const getDeliveryPersons = async () => {
-  const persons = await DeliveryPerson.find({
-    is_active: true,
-  }).sort({ createdAt: -1 });
+const getDeliveryPersons = async (query = {}) => {
+  const {
+    page = 1,
+    limit = 5,
+    name,
+    phone,
+    vehicle_type,
+    vehicle_number,
+  } = query;
 
-  return persons;
+  const parsedPage = Number(page);
+  const parsedLimit = Number(limit);
+
+  const skip = (parsedPage - 1) * parsedLimit;
+
+  /* ================= BASE FILTER ================= */
+  const filter = {
+    is_active: true,
+  };
+
+  /* ================= NAME SEARCH ================= */
+  if (name) {
+    const words = name.trim().split(/\s+/);
+
+    filter.$and = words.map((word) => ({
+      name: { $regex: word, $options: "i" },
+    }));
+  }
+
+  /* ================= PHONE SEARCH ================= */
+  if (phone) {
+    filter.phone = { $regex: phone, $options: "i" };
+  }
+
+  /* ================= VEHICLE TYPE ================= */
+  if (vehicle_type) {
+    filter.vehicle_type = vehicle_type.toLowerCase();
+  }
+
+  /* ================= VEHICLE NUMBER ================= */
+  if (vehicle_number) {
+    filter.vehicle_number = {
+      $regex: vehicle_number,
+      $options: "i",
+    };
+  }
+
+  /* ================= QUERY ================= */
+  const [persons, total] = await Promise.all([
+    DeliveryPerson.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parsedLimit),
+
+    DeliveryPerson.countDocuments(filter),
+  ]);
+
+  /* ================= RESPONSE ================= */
+  return {
+    data: persons,
+    total,
+    page: parsedPage,
+    limit: parsedLimit,
+    totalPages: Math.ceil(total / parsedLimit),
+  };
 };
 
 /* ================= GET DELIVERY PERSON ================= */

@@ -28,7 +28,7 @@ const createDeliveryPerson = async (req, res) => {
 
 const getDeliveryPersons = async (req, res) => {
   try {
-    const persons = await deliveryPersonService.getDeliveryPersons();
+    const persons = await deliveryPersonService.getDeliveryPersons(req.query);
 
     return sendResponse(res, {
       success: SUCCESS.YES,
