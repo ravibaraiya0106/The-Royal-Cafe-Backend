@@ -5,6 +5,7 @@ const { SUCCESS, STATUS_CODES, MESSAGES } = require("../constants/constant");
 /* ================= CREATE COUPON ================= */
 const createCoupon = async (req, res) => {
   try {
+    console.log("Creating coupon with data:", req.body);
     const coupon = await couponService.createCoupon(req.body);
     return sendResponse(res, {
       success: SUCCESS.YES,
@@ -24,7 +25,7 @@ const createCoupon = async (req, res) => {
 /* ================= GET ALL COUPONS ================= */
 const getAllCoupons = async (req, res) => {
   try {
-    const coupons = await couponService.getAllCoupons();
+    const coupons = await couponService.getAllCoupons(req.query);
 
     return sendResponse(res, {
       success: SUCCESS.YES,
@@ -63,6 +64,7 @@ const getCoupon = async (req, res) => {
 /* ================= UPDATE COUPON ================= */
 const updateCoupon = async (req, res) => {
   try {
+    console.log("Updating coupon with data:", req.body);
     const coupon = await couponService.updateCoupon(req.params.id, req.body);
 
     return sendResponse(res, {

@@ -17,11 +17,58 @@ const createCoupon = async (data = {}) => {
 };
 
 /* ================= GET ALL COUPONS ================= */
-const getAllCoupons = async () => {
-  const coupons = await Coupon.find({ is_active: true }).sort({
-    created_at: -1,
-  });
-  return coupons;
+const getAllCoupons = async (query = {}) => {
+  const { page = 1, limit = 10, code, discount_type, expiry_date } = query;
+
+  const parsedPage = Number(page);
+  const parsedLimit = Number(limit);
+
+  const skip = (parsedPage - 1) * parsedLimit;
+
+  /* ================= BASE FILTER ================= */
+  const filter = {
+    is_active: true,
+  };
+
+  /* ================= CODE SEARCH ================= */
+  if (code) {
+    filter.code = { $regex: code, $options: "i" }; // case-insensitive
+  }
+
+  /* ================= DISCOUNT TYPE FILTER ================= */
+  if (discount_type) {
+    filter.discount_type = discount_type; // percentage | flat
+  }
+
+  /* ================= EXPIRY DATE FILTER ================= */
+  if (expiry_date) {
+    // Filter coupons that expire on this date
+    const start = new Date(expiry_date);
+    const end = new Date(expiry_date);
+
+    end.setHours(23, 59, 59, 999);
+
+    filter.expiry_date = {
+      $gte: start,
+      $lte: end,
+    };
+  }
+
+  /* ================= FETCH ================= */
+  const [coupons, total] = await Promise.all([
+    Coupon.find(filter).sort({ createdAt: -1 }).skip(skip).limit(parsedLimit),
+
+    Coupon.countDocuments(filter),
+  ]);
+
+  /* ================= RESPONSE ================= */
+  return {
+    data: coupons,
+    total,
+    page: parsedPage,
+    limit: parsedLimit,
+    totalPages: Math.ceil(total / parsedLimit),
+  };
 };
 
 /* ================= GET COUPON BY ID ================= */

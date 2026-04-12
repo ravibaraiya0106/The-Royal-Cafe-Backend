@@ -4,7 +4,7 @@ const router = express.Router();
 const couponController = require("../controllers/coupon.controller");
 const authMiddleware = require("../middlewares/auth.middleware");
 const validate = require("../middlewares/validation.middleware");
-const { createCouponValidation } = require("../validations/coupon.validation");
+const { createCouponValidation, updateCouponValidation } = require("../validations/coupon.validation");
 const multer = require("multer");
 const upload = multer();
 
@@ -28,7 +28,7 @@ router.put(
   "/update/:id",
   upload.none(),
   authMiddleware,
-  validate(createCouponValidation),
+  validate(updateCouponValidation),
   couponController.updateCoupon,
 );
 

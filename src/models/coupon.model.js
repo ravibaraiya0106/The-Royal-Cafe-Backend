@@ -65,4 +65,12 @@ const couponSchema = new mongoose.Schema(
   },
 );
 
+couponSchema.index(
+  { code: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { is_active: true },
+  },
+);
+
 module.exports = mongoose.model("Coupon", couponSchema);
