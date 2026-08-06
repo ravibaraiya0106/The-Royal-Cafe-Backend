@@ -27,6 +27,7 @@ const registerUser = async (data = {}) => {
   /* Check existing user */
 
   const existingUser = await User.findOne({
+    is_active: 1,
     $or: [{ email }, { username }],
   });
   authLogger.info("Existing user found", existingUser);

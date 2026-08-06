@@ -7,15 +7,12 @@ const categorySchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
-      unique: true,
     },
 
     slug: {
       type: String,
-      unique: true,
       lowercase: true,
       trim: true,
-      index: true,
     },
 
     description: {

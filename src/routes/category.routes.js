@@ -24,7 +24,7 @@ router.post(
 router.get("/list", authMiddleware, categoryController.getCategories);
 
 /* ================= GET CATEGORY DROPDOWN ================= */
-router.get("/dropdown", authMiddleware, categoryController.getCategoryDropdown);
+router.get("/dropdown", categoryController.getCategoryDropdown);
 
 /* ================= GET CATEGORY BY ID ================= */
 

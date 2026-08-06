@@ -23,7 +23,7 @@ router.post(
 
 /* ================= GET ALL PRODUCTS ================= */
 
-router.get("/list",authMiddleware, productController.getAllProducts);
+router.get("/list", productController.getAllProducts);
 
 /* ================= GET PRODUCT BY ID ================= */
 
