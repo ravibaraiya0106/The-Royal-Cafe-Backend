@@ -2,6 +2,7 @@ const Order = require("../models/order.model");
 const OrderItem = require("../models/orderItem.model");
 const Payment = require("../models/payment.model");
 const OrderStatusHistory = require("../models/orderStatusHistory.model");
+const Coupon = require("../models/coupon.model");
 
 const cartService = require("./cart.service");
 
@@ -12,7 +13,13 @@ const generateOrderNumber = () => {
 
 /* ================= CREATE ORDER ================= */
 const createOrder = async (userId, data = {}) => {
-  const { address, phone, payment_method = "COD", notes = "" } = data;
+  const {
+    address,
+    phone,
+    payment_method = "COD",
+    notes = "",
+    coupon_code,
+  } = data;
 
   const cartItems = await cartService.getUserCart(userId);
   if (!cartItems || cartItems.length === 0) {
@@ -24,15 +31,49 @@ const createOrder = async (userId, data = {}) => {
     0,
   );
 
-  const finalAmount = totalAmount; // No coupon/discount flow wired yet
-  const orderStatus = payment_method === "COD" ? "confirmed" : "confirmed";
+  let coupon = null;
+  let discountAmount = 0;
+  let finalAmount = totalAmount;
+
+  if (coupon_code && String(coupon_code).trim()) {
+    const code = String(coupon_code).trim().toUpperCase();
+
+    coupon = await Coupon.findOne({ code, is_active: true });
+
+    if (coupon) {
+      const now = new Date();
+      const expiry = coupon.expiry_date ? new Date(coupon.expiry_date) : null;
+      const minOrder = coupon.min_order_amount ?? 0;
+      const maxDiscount = coupon.max_discount ?? null;
+
+      if (expiry && expiry < now) {
+        coupon = null;
+      } else if (totalAmount >= minOrder) {
+        if (coupon.discount_type === "percentage") {
+          discountAmount = (totalAmount * coupon.discount_value) / 100;
+        } else {
+          discountAmount = coupon.discount_value;
+        }
+
+        if (maxDiscount !== null && Number.isFinite(maxDiscount)) {
+          discountAmount = Math.min(discountAmount, maxDiscount);
+        }
+
+        discountAmount = Math.max(discountAmount, 0);
+        finalAmount = Math.max(totalAmount - discountAmount, 0);
+      }
+    }
+  }
+
+  const orderStatus = "confirmed";
   const paymentStatus = payment_method === "COD" ? "pending" : "paid";
 
   const order = await Order.create({
     order_number: generateOrderNumber(),
     user: userId,
     total_amount: totalAmount,
-    discount_amount: 0,
+    coupon: coupon ? coupon._id : null,
+    discount_amount: discountAmount,
     final_amount: finalAmount,
     payment_method,
     payment_status: paymentStatus,
@@ -73,6 +114,13 @@ const createOrder = async (userId, data = {}) => {
   // Clear user's cart after order is created
   await cartService.clearCart(userId);
 
+  // Update coupon usage (best-effort)
+  if (coupon) {
+    await Coupon.findByIdAndUpdate(coupon._id, {
+      $inc: { used_count: 1 },
+    });
+  }
+
   return {
     order,
     orderItems,
@@ -83,8 +131,9 @@ const createOrder = async (userId, data = {}) => {
 const getUserOrders = async (userId) => {
   const orders = await Order.find({ user: userId })
     .sort({ createdAt: -1 })
+    .populate("coupon", "code description discount_type discount_value min_order_amount max_discount expiry_date")
     .select(
-      "order_number final_amount payment_method payment_status order_status createdAt address phone",
+      "order_number total_amount final_amount discount_amount coupon payment_method payment_status order_status createdAt address phone",
     );
 
   return orders;

@@ -109,10 +109,41 @@ const deleteCoupon = async (id = null) => {
   return true;
 };
 
+/* ================= AVAILABLE COUPONS (FOR CHECKOUT) ================= */
+const getAvailableCoupons = async (query = {}) => {
+  const rawAmount = query.order_amount ?? 0;
+  const orderAmount = Number(rawAmount);
+
+  if (!Number.isFinite(orderAmount) || orderAmount < 0) {
+    throw new Error("Invalid order amount");
+  }
+
+  const now = new Date();
+
+  const coupons = await Coupon.find({
+    is_active: true,
+    expiry_date: { $gte: now },
+  });
+
+  return coupons.filter((c) => {
+    const minOrder = c.min_order_amount ?? 0;
+    const usageLimit = c.usage_limit ?? null;
+    const usedCount = c.used_count ?? 0;
+
+    if (orderAmount < minOrder) return false;
+    if (usageLimit !== null && Number.isFinite(usageLimit)) {
+      if (usedCount >= usageLimit) return false;
+    }
+
+    return true;
+  });
+};
+
 module.exports = {
   createCoupon,
   getAllCoupons,
   getCouponById,
   updateCoupon,
   deleteCoupon,
+  getAvailableCoupons,
 };

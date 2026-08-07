@@ -13,6 +13,7 @@ const createOrderValidation = Joi.object({
   payment_method: Joi.string()
     .valid("COD", "UPI", "CARD")
     .default("COD"),
+  coupon_code: Joi.string().trim().allow("").optional(),
   notes: Joi.string().allow("").optional(),
 });
 

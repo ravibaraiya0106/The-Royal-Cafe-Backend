@@ -20,6 +20,9 @@ router.post(
 /* ================= GET ALL COUPONS ================= */
 router.get("/list", authMiddleware, couponController.getAllCoupons);
 
+/* ================= AVAILABLE COUPONS (FOR CHECKOUT) ================= */
+router.get("/available", authMiddleware, couponController.getAvailableCoupons);
+
 /* ================= GET COUPON ================= */
 router.get("/:id", authMiddleware, couponController.getCoupon);
 

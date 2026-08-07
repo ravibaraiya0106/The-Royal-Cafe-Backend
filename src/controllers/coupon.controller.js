@@ -101,10 +101,31 @@ const deleteCoupon = async (req, res) => {
   }
 };
 
+/* ================= AVAILABLE COUPONS ================= */
+const getAvailableCoupons = async (req, res) => {
+  try {
+    const coupons = await couponService.getAvailableCoupons(req.query);
+
+    return sendResponse(res, {
+      success: SUCCESS.YES,
+      message: "Available coupons fetched successfully",
+      data: coupons,
+      statusCode: STATUS_CODES.OK,
+    });
+  } catch (error) {
+    return sendResponse(res, {
+      success: SUCCESS.NO,
+      message: error.message || MESSAGES.COMMON.SERVER_ERROR,
+      statusCode: STATUS_CODES.BAD_REQUEST,
+    });
+  }
+};
+
 module.exports = {
   createCoupon,
   getAllCoupons,
   getCoupon,
   updateCoupon,
   deleteCoupon,
+  getAvailableCoupons,
 };
