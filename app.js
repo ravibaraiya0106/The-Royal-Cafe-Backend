@@ -57,6 +57,9 @@ app.use(`${API_PREFIX}/review`, require("./src/routes/review.routes"));
 // Cart Routes
 app.use(`${API_PREFIX}/cart`, require("./src/routes/cart.routes"));
 
+// Order Routes
+app.use(`${API_PREFIX}/order`, require("./src/routes/order.routes"));
+
 // Coupon Routes
 app.use(`${API_PREFIX}/coupon`, require("./src/routes/coupon.routes"));
 
