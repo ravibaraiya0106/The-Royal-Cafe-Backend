@@ -90,15 +90,56 @@ const getUserOrders = async (userId) => {
   return orders;
 };
 
-/* ================= ADMIN ORDER HISTORY ================= */
-const getAdminOrders = async () => {
-  const orders = await Order.find({})
-    .sort({ createdAt: -1 })
-    .select(
-      "order_number user final_amount payment_method payment_status order_status createdAt address phone",
-    );
+/* ================= ADMIN ORDER HISTORY (PAGINATED + FILTERED) ================= */
+const getAdminOrders = async (query = {}) => {
+  const {
+    page = 1,
+    limit = 10,
+    order_number,
+    payment_method,
+    payment_status,
+    order_status,
+  } = query;
 
-  return orders;
+  const parsedPage = Number(page);
+  const parsedLimit = Number(limit);
+  const safePage = Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+  const safeLimit = Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : 10;
+
+  const skip = (safePage - 1) * safeLimit;
+
+  const filter = {};
+
+  if (order_number) {
+    // Partial match for order number search
+    const q = String(order_number).trim();
+    if (q) {
+      filter.order_number = { $regex: q, $options: "i" };
+    }
+  }
+
+  if (payment_method) filter.payment_method = String(payment_method);
+  if (payment_status) filter.payment_status = String(payment_status);
+  if (order_status) filter.order_status = String(order_status);
+
+  const [orders, total] = await Promise.all([
+    Order.find(filter)
+      .sort({ createdAt: -1 })
+      .select(
+        "order_number user final_amount payment_method payment_status order_status createdAt address phone",
+      )
+      .skip(skip)
+      .limit(safeLimit),
+    Order.countDocuments(filter),
+  ]);
+
+  return {
+    data: orders,
+    total,
+    page: safePage,
+    limit: safeLimit,
+    totalPages: Math.ceil(total / safeLimit),
+  };
 };
 
 /* ================= USER ORDER DETAILS ================= */

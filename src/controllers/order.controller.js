@@ -85,7 +85,7 @@ const getAdminOrders = async (req, res) => {
       });
     }
 
-    const orders = await orderService.getAdminOrders();
+    const orders = await orderService.getAdminOrders(req.query);
 
     return sendResponse(res, {
       success: SUCCESS.YES,
