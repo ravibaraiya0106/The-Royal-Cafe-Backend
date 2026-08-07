@@ -90,6 +90,17 @@ const getUserOrders = async (userId) => {
   return orders;
 };
 
+/* ================= ADMIN ORDER HISTORY ================= */
+const getAdminOrders = async () => {
+  const orders = await Order.find({})
+    .sort({ createdAt: -1 })
+    .select(
+      "order_number user final_amount payment_method payment_status order_status createdAt address phone",
+    );
+
+  return orders;
+};
+
 /* ================= USER ORDER DETAILS ================= */
 const getUserOrderDetails = async (userId, orderId) => {
   const order = await Order.findOne({ _id: orderId, user: userId });
@@ -108,6 +119,7 @@ const getUserOrderDetails = async (userId, orderId) => {
 module.exports = {
   createOrder,
   getUserOrders,
+  getAdminOrders,
   getUserOrderDetails,
 };
 

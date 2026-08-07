@@ -74,9 +74,38 @@ const getUserOrderDetails = async (req, res) => {
   }
 };
 
+/* ================= ADMIN ORDER HISTORY ================= */
+const getAdminOrders = async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return sendResponse(res, {
+        success: SUCCESS.NO,
+        message: "Unauthorized access",
+        statusCode: STATUS_CODES.FORBIDDEN,
+      });
+    }
+
+    const orders = await orderService.getAdminOrders();
+
+    return sendResponse(res, {
+      success: SUCCESS.YES,
+      message: "Admin orders fetched successfully",
+      data: orders,
+      statusCode: STATUS_CODES.OK,
+    });
+  } catch (error) {
+    return sendResponse(res, {
+      success: SUCCESS.NO,
+      message: error.message || MESSAGES.COMMON.SERVER_ERROR,
+      statusCode: STATUS_CODES.BAD_REQUEST,
+    });
+  }
+};
+
 module.exports = {
   createOrder,
   getUserOrders,
   getUserOrderDetails,
+  getAdminOrders,
 };
 
