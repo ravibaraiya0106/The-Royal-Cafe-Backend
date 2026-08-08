@@ -18,6 +18,7 @@ const PATHS = {
 const ROLES = {
   ADMIN: "admin",
   USER: "user",
+  DELIVERY_PERSON: "delivery_person",
 };
 
 /* Account Status */
@@ -135,6 +136,16 @@ const MESSAGES = {
     UPDATED: "Delivery person updated successfully",
     DELETED: "Delivery person deleted successfully",
     NOT_FOUND: "Delivery person not found",
+    ALREADY_EXISTS: "Delivery person with this phone number already exists",
+  },
+  DELIVERY: {
+    ASSIGNED_SUCCESS: "Delivery assigned successfully",
+    STATUS_UPDATED: "Delivery status updated successfully",
+    FETCH_SUCCESS: "Deliveries fetched successfully",
+    NOT_FOUND: "Delivery task not found",
+    NOT_AUTHORIZED: "You are not authorized for this delivery task",
+    LOCATION_UPDATED: "Location updated successfully",
+    AVAILABILITY_TOGGLED: "Availability updated successfully",
   },
   BLOG: {
     CREATE_SUCCESS: "Blog created successfully",

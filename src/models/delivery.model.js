@@ -16,13 +16,28 @@ const deliverySchema = new mongoose.Schema(
 
     delivery_status: {
       type: String,
-      enum: ["assigned", "picked", "delivered"],
+      enum: ["assigned", "picked", "out_for_delivery", "delivered", "cancelled"],
       default: "assigned",
+    },
+
+    pickup_at: {
+      type: Date,
+      default: null,
     },
 
     delivered_at: {
       type: Date,
       default: null,
+    },
+
+    notes: {
+      type: String,
+      default: "",
+    },
+
+    cash_collected: {
+      type: Number,
+      default: 0,
     },
   },
   {

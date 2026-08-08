@@ -1,0 +1,298 @@
+const Delivery = require("../models/delivery.model");
+const DeliveryPerson = require("../models/deliveryPerson.model");
+const Order = require("../models/order.model");
+const OrderItem = require("../models/orderItem.model");
+const Payment = require("../models/payment.model");
+const OrderStatusHistory = require("../models/orderStatusHistory.model");
+const User = require("../models/user.model");
+const { MESSAGES } = require("../constants/constant");
+
+/* ================= HELPER: GET DELIVERY PERSON BY USER ID ================= */
+const getDeliveryPersonByUser = async (userId) => {
+  let dp = await DeliveryPerson.findOne({ user: userId, is_active: true });
+  if (!dp) {
+    dp = await DeliveryPerson.findOne({ _id: userId, is_active: true });
+  }
+  return dp;
+};
+
+/* ================= ASSIGN DELIVERY (ADMIN) ================= */
+const assignDelivery = async (data = {}) => {
+  const { orderId, deliveryPersonId, notes = "" } = data;
+
+  const order = await Order.findById(orderId);
+  if (!order) {
+    throw new Error("Order not found");
+  }
+
+  if (order.order_status === "cancelled") {
+    throw new Error("Cannot assign delivery to a cancelled order");
+  }
+
+  const deliveryPerson = await DeliveryPerson.findOne({
+    _id: deliveryPersonId,
+    is_active: true,
+  });
+
+  if (!deliveryPerson) {
+    throw new Error(MESSAGES.DELIVERY_PERSON.NOT_FOUND);
+  }
+
+  let delivery = await Delivery.findOne({ order: orderId });
+
+  if (delivery) {
+    delivery.delivery_person = deliveryPersonId;
+    delivery.delivery_status = "assigned";
+    if (notes) delivery.notes = notes;
+    await delivery.save();
+  } else {
+    delivery = await Delivery.create({
+      order: orderId,
+      delivery_person: deliveryPersonId,
+      delivery_status: "assigned",
+      notes,
+    });
+  }
+
+  if (order.order_status === "pending") {
+    order.order_status = "confirmed";
+    await order.save();
+  }
+
+  await OrderStatusHistory.create({
+    order: orderId,
+    status: "delivery_assigned",
+    changed_at: new Date(),
+  });
+
+  return await Delivery.findById(delivery._id)
+    .populate("order")
+    .populate("delivery_person");
+};
+
+/* ================= GET MY DELIVERIES (DELIVERY BOY) ================= */
+const getMyDeliveries = async (userId, query = {}) => {
+  const dp = await getDeliveryPersonByUser(userId);
+  if (!dp) {
+    throw new Error(MESSAGES.DELIVERY_PERSON.NOT_FOUND);
+  }
+
+  const { page = 1, limit = 10, status } = query;
+  const parsedPage = Math.max(1, Number(page) || 1);
+  const parsedLimit = Math.max(1, Number(limit) || 10);
+  const skip = (parsedPage - 1) * parsedLimit;
+
+  const filter = { delivery_person: dp._id };
+
+  if (status) {
+    if (status === "active") {
+      filter.delivery_status = { $in: ["assigned", "picked", "out_for_delivery"] };
+    } else if (status === "completed") {
+      filter.delivery_status = "delivered";
+    } else {
+      filter.delivery_status = status;
+    }
+  }
+
+  const [deliveries, total] = await Promise.all([
+    Delivery.find(filter)
+      .sort({ createdAt: -1 })
+      .populate({
+        path: "order",
+        populate: {
+          path: "user",
+          select: "first_name last_name email phone_no",
+        },
+      })
+      .skip(skip)
+      .limit(parsedLimit),
+    Delivery.countDocuments(filter),
+  ]);
+
+  const populatedDeliveries = await Promise.all(
+    deliveries.map(async (item) => {
+      const deliveryObj = item.toObject();
+      if (deliveryObj.order && deliveryObj.order._id) {
+        const items = await OrderItem.find({ order: deliveryObj.order._id }).select(
+          "product_name price quantity subtotal",
+        );
+        deliveryObj.order.items = items;
+      }
+      return deliveryObj;
+    }),
+  );
+
+  return {
+    delivery_person: dp,
+    data: populatedDeliveries,
+    total,
+    page: parsedPage,
+    limit: parsedLimit,
+    totalPages: Math.ceil(total / parsedLimit),
+  };
+};
+
+/* ================= GET DELIVERY DETAILS ================= */
+const getDeliveryDetails = async (deliveryId, userId = null) => {
+  const delivery = await Delivery.findById(deliveryId)
+    .populate({
+      path: "order",
+      populate: {
+        path: "user",
+        select: "first_name last_name email phone_no",
+      },
+    })
+    .populate("delivery_person");
+
+  if (!delivery) {
+    throw new Error(MESSAGES.DELIVERY.NOT_FOUND);
+  }
+
+  if (userId) {
+    const dp = await getDeliveryPersonByUser(userId);
+    if (dp && String(delivery.delivery_person._id) !== String(dp._id)) {
+      throw new Error(MESSAGES.DELIVERY.NOT_AUTHORIZED);
+    }
+  }
+
+  const deliveryObj = delivery.toObject();
+  if (deliveryObj.order && deliveryObj.order._id) {
+    const items = await OrderItem.find({ order: deliveryObj.order._id });
+    deliveryObj.order.items = items;
+  }
+
+  return deliveryObj;
+};
+
+/* ================= UPDATE DELIVERY STATUS ================= */
+const updateDeliveryStatus = async (deliveryId, userId, data = {}) => {
+  const { status, cash_collected = 0, notes = "" } = data;
+
+  const dp = await getDeliveryPersonByUser(userId);
+  if (!dp) {
+    throw new Error(MESSAGES.DELIVERY_PERSON.NOT_FOUND);
+  }
+
+  const delivery = await Delivery.findOne({
+    _id: deliveryId,
+    delivery_person: dp._id,
+  }).populate("order");
+
+  if (!delivery) {
+    throw new Error(MESSAGES.DELIVERY.NOT_FOUND);
+  }
+
+  delivery.delivery_status = status;
+  if (notes) delivery.notes = notes;
+
+  const order = await Order.findById(delivery.order._id);
+
+  if (status === "picked") {
+    delivery.pickup_at = new Date();
+    if (order) {
+      order.order_status = "preparing";
+      await order.save();
+    }
+  } else if (status === "out_for_delivery") {
+    if (order) {
+      order.order_status = "preparing";
+      await order.save();
+    }
+  } else if (status === "delivered") {
+    delivery.delivered_at = new Date();
+    delivery.cash_collected = Number(cash_collected) || order.final_amount;
+
+    if (order) {
+      order.order_status = "delivered";
+      if (order.payment_method === "COD") {
+        order.payment_status = "paid";
+      }
+      await order.save();
+
+      await Payment.findOneAndUpdate(
+        { order: order._id },
+        {
+          payment_status: "paid",
+          paid_at: new Date(),
+        },
+      );
+    }
+
+    dp.is_available = true;
+    await dp.save();
+  }
+
+  await delivery.save();
+
+  await OrderStatusHistory.create({
+    order: delivery.order._id,
+    status: `delivery_${status}`,
+    changed_at: new Date(),
+  });
+
+  return delivery;
+};
+
+/* ================= TOGGLE AVAILABILITY ================= */
+const toggleAvailability = async (userId, isAvailable) => {
+  const dp = await getDeliveryPersonByUser(userId);
+  if (!dp) {
+    throw new Error(MESSAGES.DELIVERY_PERSON.NOT_FOUND);
+  }
+
+  dp.is_available = typeof isAvailable === "boolean" ? isAvailable : !dp.is_available;
+  await dp.save();
+  return dp;
+};
+
+/* ================= UPDATE LOCATION ================= */
+const updateLocation = async (userId, lat, lng) => {
+  const dp = await getDeliveryPersonByUser(userId);
+  if (!dp) {
+    throw new Error(MESSAGES.DELIVERY_PERSON.NOT_FOUND);
+  }
+
+  dp.current_location = { lat: Number(lat), lng: Number(lng) };
+  await dp.save();
+  return dp;
+};
+
+/* ================= GET ALL DELIVERIES (ADMIN) ================= */
+const getAdminDeliveries = async (query = {}) => {
+  const { page = 1, limit = 10, delivery_status, delivery_person } = query;
+  const parsedPage = Math.max(1, Number(page) || 1);
+  const parsedLimit = Math.max(1, Number(limit) || 10);
+  const skip = (parsedPage - 1) * parsedLimit;
+
+  const filter = {};
+  if (delivery_status) filter.delivery_status = delivery_status;
+  if (delivery_person) filter.delivery_person = delivery_person;
+
+  const [deliveries, total] = await Promise.all([
+    Delivery.find(filter)
+      .sort({ createdAt: -1 })
+      .populate("order")
+      .populate("delivery_person")
+      .skip(skip)
+      .limit(parsedLimit),
+    Delivery.countDocuments(filter),
+  ]);
+
+  return {
+    data: deliveries,
+    total,
+    page: parsedPage,
+    limit: parsedLimit,
+    totalPages: Math.ceil(total / parsedLimit),
+  };
+};
+
+module.exports = {
+  assignDelivery,
+  getMyDeliveries,
+  getDeliveryDetails,
+  updateDeliveryStatus,
+  toggleAvailability,
+  updateLocation,
+  getAdminDeliveries,
+};

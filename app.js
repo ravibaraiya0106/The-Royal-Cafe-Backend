@@ -69,6 +69,9 @@ app.use(
   require("./src/routes/deliveryPerson.routes"),
 );
 
+// Delivery Routes
+app.use(`${API_PREFIX}/delivery`, require("./src/routes/delivery.routes"));
+
 // Blogs
 app.use(`${API_PREFIX}/blog`, require("./src/routes/blog.routes"));
 /* ================= HEALTH CHECK ================= */

@@ -171,6 +171,8 @@ const getAdminOrders = async (query = {}) => {
   if (payment_status) filter.payment_status = String(payment_status);
   if (order_status) filter.order_status = String(order_status);
 
+  const Delivery = require("../models/delivery.model");
+
   const [orders, total] = await Promise.all([
     Order.find(filter)
       .sort({ createdAt: -1 })
@@ -182,8 +184,22 @@ const getAdminOrders = async (query = {}) => {
     Order.countDocuments(filter),
   ]);
 
+  const populatedOrders = await Promise.all(
+    orders.map(async (ord) => {
+      const orderObj = ord.toObject();
+      const delivery = await Delivery.findOne({ order: ord._id }).populate(
+        "delivery_person",
+        "name phone vehicle_type is_available",
+      );
+      if (delivery) {
+        orderObj.delivery = delivery;
+      }
+      return orderObj;
+    }),
+  );
+
   return {
-    data: orders,
+    data: populatedOrders,
     total,
     page: safePage,
     limit: safeLimit,
