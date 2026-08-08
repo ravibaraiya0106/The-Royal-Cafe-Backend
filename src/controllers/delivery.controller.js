@@ -175,6 +175,27 @@ const getAdminDeliveries = async (req, res) => {
   }
 };
 
+/* ================= GET DELIVERY ANALYTICS ================= */
+const getDeliveryAnalytics = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const analytics = await deliveryService.getDeliveryAnalytics(userId);
+
+    return sendResponse(res, {
+      success: SUCCESS.YES,
+      message: MESSAGES.DELIVERY.FETCH_SUCCESS,
+      data: analytics,
+      statusCode: STATUS_CODES.OK,
+    });
+  } catch (error) {
+    return sendResponse(res, {
+      success: SUCCESS.NO,
+      message: error.message || MESSAGES.COMMON.SERVER_ERROR,
+      statusCode: STATUS_CODES.BAD_REQUEST,
+    });
+  }
+};
+
 module.exports = {
   assignDelivery,
   getMyDeliveries,
@@ -183,4 +204,5 @@ module.exports = {
   toggleAvailability,
   updateLocation,
   getAdminDeliveries,
+  getDeliveryAnalytics,
 };

@@ -222,10 +222,96 @@ const getUserOrderDetails = async (userId, orderId) => {
   };
 };
 
+/* ================= ADMIN ANALYTICS & DASHBOARD STATS ================= */
+const getAdminAnalytics = async () => {
+  const User = require("../models/user.model");
+  const DeliveryPerson = require("../models/deliveryPerson.model");
+
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+  sevenDaysAgo.setHours(0, 0, 0, 0);
+
+  const [
+    totalRevenueAgg,
+    totalOrders,
+    totalCustomers,
+    deliveryPersons,
+    statusBreakdownAgg,
+    dailyTrendAgg,
+  ] = await Promise.all([
+    Order.aggregate([
+      { $match: { order_status: { $ne: "cancelled" } } },
+      { $group: { _id: null, total: { $sum: "$final_amount" } } },
+    ]),
+    Order.countDocuments({}),
+    User.countDocuments({ role: "customer" }),
+    DeliveryPerson.find({ is_active: true }),
+    Order.aggregate([
+      { $group: { _id: "$order_status", count: { $sum: 1 } } },
+    ]),
+    Order.aggregate([
+      { $match: { createdAt: { $gte: sevenDaysAgo } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          revenue: {
+            $sum: {
+              $cond: [{ $ne: ["$order_status", "cancelled"] }, "$final_amount", 0],
+            },
+          },
+          orders: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]),
+  ]);
+
+  const totalRevenue = totalRevenueAgg[0]?.total || 0;
+  const onlineDeliveryPersons = deliveryPersons.filter((d) => d.is_available).length;
+
+  const statusMap = {};
+  statusBreakdownAgg.forEach((item) => {
+    statusMap[item._id] = item.count;
+  });
+
+  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const trendMap = {};
+  dailyTrendAgg.forEach((item) => {
+    trendMap[item._id] = item;
+  });
+
+  const dailyTrend = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().split("T")[0];
+    const dayLabel = dayNames[d.getDay()];
+    const record = trendMap[dateStr];
+
+    dailyTrend.push({
+      label: dayLabel,
+      date: dateStr,
+      value: record ? record.revenue : 0,
+      secondaryValue: record ? record.orders : 0,
+    });
+  }
+
+  return {
+    totalRevenue,
+    totalOrders,
+    totalCustomers,
+    totalDeliveryPersons: deliveryPersons.length,
+    onlineDeliveryPersons,
+    statusBreakdown: statusMap,
+    dailyTrend,
+  };
+};
+
 module.exports = {
   createOrder,
   getUserOrders,
   getAdminOrders,
   getUserOrderDetails,
+  getAdminAnalytics,
 };
 

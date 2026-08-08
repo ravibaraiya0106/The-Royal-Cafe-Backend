@@ -25,4 +25,7 @@ router.patch("/update-location", authMiddleware, deliveryController.updateLocati
 /* ================= ADMIN DELIVERY LIST ================= */
 router.get("/admin/list", authMiddleware, deliveryController.getAdminDeliveries);
 
+/* ================= DELIVERY ANALYTICS ================= */
+router.get("/analytics", authMiddleware, deliveryController.getDeliveryAnalytics);
+
 module.exports = router;

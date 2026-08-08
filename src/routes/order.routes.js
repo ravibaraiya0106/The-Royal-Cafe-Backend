@@ -23,5 +23,8 @@ router.get("/details/:id", authMiddleware, orderController.getUserOrderDetails);
 /* ================= ADMIN ORDER HISTORY ================= */
 router.get("/admin/list", authMiddleware, orderController.getAdminOrders);
 
+/* ================= ADMIN ANALYTICS ================= */
+router.get("/admin/analytics", authMiddleware, orderController.getAdminAnalytics);
+
 module.exports = router;
 

@@ -3,7 +3,7 @@ const transporter = require("./mailTransport");
 const sendEmail = async (to, subject, html) => {
   try {
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: `"The Royal Cafe" <${process.env.EMAIL_USER}>`,
       to,
       subject,
       html,

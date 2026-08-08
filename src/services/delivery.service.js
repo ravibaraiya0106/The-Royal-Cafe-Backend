@@ -287,6 +287,77 @@ const getAdminDeliveries = async (query = {}) => {
   };
 };
 
+/* ================= DELIVERY ANALYTICS & STATS ================= */
+const getDeliveryAnalytics = async (userId) => {
+  const dp = await getDeliveryPersonByUser(userId);
+  if (!dp) {
+    throw new Error(MESSAGES.DELIVERY_PERSON.NOT_FOUND);
+  }
+
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+  sevenDaysAgo.setHours(0, 0, 0, 0);
+
+  const [statusBreakdownAgg, dailyCompletedAgg, cashCollectedAgg] = await Promise.all([
+    Delivery.aggregate([
+      { $match: { delivery_person: dp._id } },
+      { $group: { _id: "$delivery_status", count: { $sum: 1 } } },
+    ]),
+    Delivery.aggregate([
+      {
+        $match: {
+          delivery_person: dp._id,
+          delivery_status: "delivered",
+          createdAt: { $gte: sevenDaysAgo },
+        },
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          completed: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]),
+    Delivery.aggregate([
+      { $match: { delivery_person: dp._id, delivery_status: "delivered" } },
+      { $group: { _id: null, totalCash: { $sum: "$cash_collected" } } },
+    ]),
+  ]);
+
+  const statusMap = {};
+  statusBreakdownAgg.forEach((item) => {
+    statusMap[item._id] = item.count;
+  });
+
+  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const trendMap = {};
+  dailyCompletedAgg.forEach((item) => {
+    trendMap[item._id] = item.completed;
+  });
+
+  const performanceTrend = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().split("T")[0];
+    const dayLabel = dayNames[d.getDay()];
+
+    performanceTrend.push({
+      label: dayLabel,
+      date: dateStr,
+      value: trendMap[dateStr] || 0,
+    });
+  }
+
+  return {
+    statusBreakdown: statusMap,
+    performanceTrend,
+    totalCashCollected: cashCollectedAgg[0]?.totalCash || 0,
+    isAvailable: dp.is_available,
+  };
+};
+
 module.exports = {
   assignDelivery,
   getMyDeliveries,
@@ -295,4 +366,5 @@ module.exports = {
   toggleAvailability,
   updateLocation,
   getAdminDeliveries,
+  getDeliveryAnalytics,
 };

@@ -154,6 +154,14 @@ const MESSAGES = {
     DELETE_SUCCESS: "Blog deleted successfully",
     NOT_FOUND: "Blog not found",
   },
+  ORDER: {
+    CREATE_SUCCESS: "Order placed successfully",
+    FETCH_SUCCESS: "Orders fetched successfully",
+    DETAILS_SUCCESS: "Order details fetched successfully",
+    ADMIN_FETCH_SUCCESS: "Admin orders fetched successfully",
+    ANALYTICS_SUCCESS: "Admin analytics fetched successfully",
+    NOT_FOUND: "Order not found",
+  },
 };
 
 const VALIDATIONS = {

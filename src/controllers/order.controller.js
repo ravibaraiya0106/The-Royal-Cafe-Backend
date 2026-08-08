@@ -18,7 +18,7 @@ const createOrder = async (req, res) => {
 
     return sendResponse(res, {
       success: SUCCESS.YES,
-      message: "Order created successfully",
+      message: MESSAGES.ORDER.CREATE_SUCCESS,
       data: result,
       statusCode: STATUS_CODES.CREATED,
     });
@@ -39,7 +39,7 @@ const getUserOrders = async (req, res) => {
 
     return sendResponse(res, {
       success: SUCCESS.YES,
-      message: "Orders fetched successfully",
+      message: MESSAGES.ORDER.FETCH_SUCCESS,
       data: orders,
       statusCode: STATUS_CODES.OK,
     });
@@ -62,7 +62,7 @@ const getUserOrderDetails = async (req, res) => {
 
     return sendResponse(res, {
       success: SUCCESS.YES,
-      message: "Order details fetched successfully",
+      message: MESSAGES.ORDER.DETAILS_SUCCESS,
       data: result,
       statusCode: STATUS_CODES.OK,
     });
@@ -81,7 +81,7 @@ const getAdminOrders = async (req, res) => {
     if (req.user.role !== "admin") {
       return sendResponse(res, {
         success: SUCCESS.NO,
-        message: "Unauthorized access",
+        message: MESSAGES.COMMON.UNAUTHORIZED_ACCESS,
         statusCode: STATUS_CODES.FORBIDDEN,
       });
     }
@@ -90,8 +90,36 @@ const getAdminOrders = async (req, res) => {
 
     return sendResponse(res, {
       success: SUCCESS.YES,
-      message: "Admin orders fetched successfully",
+      message: MESSAGES.ORDER.ADMIN_FETCH_SUCCESS,
       data: orders,
+      statusCode: STATUS_CODES.OK,
+    });
+  } catch (error) {
+    return sendResponse(res, {
+      success: SUCCESS.NO,
+      message: error.message || MESSAGES.COMMON.SERVER_ERROR,
+      statusCode: STATUS_CODES.BAD_REQUEST,
+    });
+  }
+};
+
+/* ================= ADMIN ANALYTICS ================= */
+const getAdminAnalytics = async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return sendResponse(res, {
+        success: SUCCESS.NO,
+        message: MESSAGES.COMMON.UNAUTHORIZED_ACCESS,
+        statusCode: STATUS_CODES.FORBIDDEN,
+      });
+    }
+
+    const analytics = await orderService.getAdminAnalytics();
+
+    return sendResponse(res, {
+      success: SUCCESS.YES,
+      message: MESSAGES.ORDER.ANALYTICS_SUCCESS,
+      data: analytics,
       statusCode: STATUS_CODES.OK,
     });
   } catch (error) {
@@ -108,5 +136,6 @@ module.exports = {
   getUserOrders,
   getUserOrderDetails,
   getAdminOrders,
+  getAdminAnalytics,
 };
 
