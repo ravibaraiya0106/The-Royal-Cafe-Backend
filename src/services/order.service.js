@@ -15,6 +15,8 @@ const generateOrderNumber = () => {
 const createOrder = async (userId, data = {}) => {
   const {
     address,
+    latitude,
+    longitude,
     phone,
     payment_method = "COD",
     notes = "",
@@ -78,7 +80,11 @@ const createOrder = async (userId, data = {}) => {
     payment_method,
     payment_status: paymentStatus,
     order_status: orderStatus,
-    address,
+    deliveryLocation: {
+      address,
+      latitude,
+      longitude,
+    },
     phone,
     notes: notes || "",
   });
@@ -133,7 +139,7 @@ const getUserOrders = async (userId) => {
     .sort({ createdAt: -1 })
     .populate("coupon", "code description discount_type discount_value min_order_amount max_discount expiry_date")
     .select(
-      "order_number total_amount final_amount discount_amount coupon payment_method payment_status order_status createdAt address phone",
+      "order_number total_amount final_amount discount_amount coupon payment_method payment_status order_status createdAt deliveryLocation phone",
     );
 
   return orders;
@@ -177,7 +183,7 @@ const getAdminOrders = async (query = {}) => {
     Order.find(filter)
       .sort({ createdAt: -1 })
       .select(
-        "order_number user final_amount payment_method payment_status order_status createdAt address phone",
+        "order_number user final_amount payment_method payment_status order_status createdAt deliveryLocation phone",
       )
       .skip(skip)
       .limit(safeLimit),

@@ -6,10 +6,12 @@ const { SUCCESS, STATUS_CODES, MESSAGES } = require("../constants/constant");
 const createOrder = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { address, phone, payment_method, notes, coupon_code } = req.body;
+    const { address, latitude, longitude, phone, payment_method, notes, coupon_code } = req.body;
 
     const result = await orderService.createOrder(userId, {
       address,
+      latitude,
+      longitude,
       phone,
       payment_method,
       notes,

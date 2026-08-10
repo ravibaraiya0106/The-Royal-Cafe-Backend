@@ -20,6 +20,7 @@ const orderStatusHistorySchema = new mongoose.Schema(
         "delivery_picked",
         "delivery_out_for_delivery",
         "delivery_delivered",
+        "delivery_cancelled",
       ],
       required: true,
     },

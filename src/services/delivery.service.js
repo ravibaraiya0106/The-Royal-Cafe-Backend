@@ -6,6 +6,7 @@ const Payment = require("../models/payment.model");
 const OrderStatusHistory = require("../models/orderStatusHistory.model");
 const User = require("../models/user.model");
 const { MESSAGES } = require("../constants/constant");
+const { getIO } = require("../config/socket");
 
 /* ================= HELPER: GET DELIVERY PERSON BY USER ID ================= */
 const getDeliveryPersonByUser = async (userId) => {
@@ -220,6 +221,18 @@ const updateDeliveryStatus = async (deliveryId, userId, data = {}) => {
 
     dp.is_available = true;
     await dp.save();
+    if (order) {
+      order.deliveryTracking = order.deliveryTracking || {};
+      order.deliveryTracking.isOnline = false;
+      await order.save();
+    }
+  } else if (status === "cancelled") {
+    if (order) {
+      order.order_status = "cancelled";
+      order.deliveryTracking = order.deliveryTracking || {};
+      order.deliveryTracking.isOnline = false;
+      await order.save();
+    }
   }
 
   await delivery.save();
@@ -229,6 +242,28 @@ const updateDeliveryStatus = async (deliveryId, userId, data = {}) => {
     status: `delivery_${status}`,
     changed_at: new Date(),
   });
+
+  // Broadcast status updates for customer tracking UI.
+  try {
+    const io = getIO();
+    const orderId = delivery.order._id;
+
+    const mapStatusForFrontend = () => {
+      if (status === "picked") return "preparing";
+      if (status === "out_for_delivery") return "out_for_delivery";
+      if (status === "delivered") return "delivered";
+      if (status === "cancelled") return "cancelled";
+      return status;
+    };
+
+    io.to(`order:${orderId}`).emit("order:status_update", {
+      orderId,
+      status: mapStatusForFrontend(),
+    });
+  } catch (e) {
+    // Socket may not be ready in tests/dev; ignore.
+    console.log("order:status_update broadcast failed:", e?.message || e);
+  }
 
   return delivery;
 };

@@ -55,9 +55,46 @@ const orderSchema = new mongoose.Schema(
       default: "pending",
     },
 
-    address: {
-      type: String,
-      required: true,
+    // Delivery location selected by customer during checkout.
+    deliveryLocation: {
+      address: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+      latitude: {
+        type: Number,
+        required: true,
+      },
+      longitude: {
+        type: Number,
+        required: true,
+      },
+    },
+
+    // Live delivery tracking updated during OUT_FOR_DELIVERY.
+    deliveryTracking: {
+      driverId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "DeliveryPerson",
+        default: null,
+      },
+      latitude: {
+        type: Number,
+        default: null,
+      },
+      longitude: {
+        type: Number,
+        default: null,
+      },
+      lastUpdatedAt: {
+        type: Date,
+        default: null,
+      },
+      isOnline: {
+        type: Boolean,
+        default: false,
+      },
     },
 
     phone: {

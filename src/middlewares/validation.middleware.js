@@ -7,10 +7,11 @@ const validate = (schema) => (req, res, next) => {
   });
 
   if (error) {
+    const errorMessages = error.details.map((err) => err.message);
     return res.status(400).json({
       success: false,
-      message: MESSAGES.COMMON.VALIDATION_ERROR,
-      errors: error.details.map((err) => err.message),
+      message: errorMessages.join(", ") || MESSAGES.COMMON.VALIDATION_ERROR,
+      errors: errorMessages,
     });
   }
 
