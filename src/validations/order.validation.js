@@ -23,8 +23,9 @@ const createOrderValidation = Joi.object({
     "any.required": "Phone number is required",
   }),
   payment_method: Joi.string()
-    .valid("COD", "UPI", "CARD")
+    .valid("COD", "UPI")
     .default("COD"),
+  upi_utr: Joi.string().trim().allow("").optional(),
   coupon_code: Joi.string().trim().allow("").optional(),
   notes: Joi.string().allow("").optional(),
 });

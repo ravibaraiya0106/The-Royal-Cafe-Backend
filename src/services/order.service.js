@@ -21,6 +21,7 @@ const createOrder = async (userId, data = {}) => {
     payment_method = "COD",
     notes = "",
     coupon_code,
+    upi_utr = "",
   } = data;
 
   const cartItems = await cartService.getUserCart(userId);
@@ -67,8 +68,10 @@ const createOrder = async (userId, data = {}) => {
     }
   }
 
-  const orderStatus = "confirmed";
-  const paymentStatus = payment_method === "COD" ? "pending" : "paid";
+  const isCOD = payment_method === "COD";
+  const isPaidUPI = payment_method === "UPI" && Boolean(upi_utr && upi_utr.trim());
+  const orderStatus = isCOD || isPaidUPI ? "confirmed" : "pending";
+  const paymentStatus = isPaidUPI ? "paid" : "pending";
 
   const order = await Order.create({
     order_number: generateOrderNumber(),
@@ -80,6 +83,7 @@ const createOrder = async (userId, data = {}) => {
     payment_method,
     payment_status: paymentStatus,
     order_status: orderStatus,
+    upi_utr: isPaidUPI ? upi_utr.trim() : null,
     deliveryLocation: {
       address,
       latitude,
@@ -105,20 +109,23 @@ const createOrder = async (userId, data = {}) => {
   await Payment.create({
     order: order._id,
     payment_method,
-    transaction_id: null,
+    transaction_id: isPaidUPI ? upi_utr.trim() : null,
+    upi_utr: isPaidUPI ? upi_utr.trim() : null,
     amount: finalAmount,
     payment_status: paymentStatus,
-    paid_at: paymentStatus === "paid" ? new Date() : null,
+    paid_at: isPaidUPI ? new Date() : null,
   });
 
   await OrderStatusHistory.create({
     order: order._id,
-    status: "confirmed",
+    status: orderStatus,
     changed_at: new Date(),
   });
 
-  // Clear user's cart after order is created
-  await cartService.clearCart(userId);
+  // Clear user's cart for COD or completed UPI payments
+  if (isCOD || isPaidUPI) {
+    await cartService.clearCart(userId);
+  }
 
   // Update coupon usage (best-effort)
   if (coupon) {
@@ -183,8 +190,9 @@ const getAdminOrders = async (query = {}) => {
     Order.find(filter)
       .sort({ createdAt: -1 })
       .select(
-        "order_number user final_amount payment_method payment_status order_status createdAt deliveryLocation phone",
+        "order_number user final_amount payment_method payment_status order_status upi_utr createdAt deliveryLocation phone",
       )
+      .populate("user", "username first_name last_name email phone")
       .skip(skip)
       .limit(safeLimit),
     Order.countDocuments(filter),
@@ -313,11 +321,36 @@ const getAdminAnalytics = async () => {
   };
 };
 
+/* ================= UPDATE PAYMENT STATUS ================= */
+const updatePaymentStatus = async (orderId, { payment_status }) => {
+  const order = await Order.findById(orderId);
+  if (!order) throw new Error("Order not found");
+
+  order.payment_status = payment_status;
+  if (payment_status === "paid" && order.order_status === "pending") {
+    order.order_status = "confirmed";
+  }
+  await order.save();
+
+  const Payment = require("../models/payment.model");
+  await Payment.findOneAndUpdate(
+    { order: order._id },
+    {
+      payment_status,
+      paid_at: payment_status === "paid" ? new Date() : null,
+    },
+    { upsert: true },
+  );
+
+  return order;
+};
+
 module.exports = {
   createOrder,
   getUserOrders,
   getAdminOrders,
   getUserOrderDetails,
   getAdminAnalytics,
+  updatePaymentStatus,
 };
 

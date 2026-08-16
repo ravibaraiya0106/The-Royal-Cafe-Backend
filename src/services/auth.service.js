@@ -175,10 +175,35 @@ const forgotPassword = async (email) => {
   user.reset_password_expires = Date.now() + 15 * 60 * 1000;
 
   await user.save();
-  const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+  const resetLink = `${frontendUrl}/reset-password?token=${resetToken}`;
   const html = buildResetPasswordTemplate(resetLink, user.username);
 
   await sendEmail(user.email, "Reset Your Royal Cafe Password", html);
+
+  return true;
+};
+
+/* ================= CONFIRM RESET PASSWORD WITH TOKEN ================= */
+const resetPasswordWithToken = async (token, new_password) => {
+  if (!token || !new_password) {
+    throw new Error("Token and new password are required");
+  }
+
+  const user = await User.findOne({
+    reset_password_token: token,
+    reset_password_expires: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    throw new Error("Invalid or expired password reset link. Please request a new link.");
+  }
+
+  const hashedPassword = await bcrypt.hash(new_password, 10);
+  user.password = hashedPassword;
+  user.reset_password_token = null;
+  user.reset_password_expires = null;
+  await user.save();
 
   return true;
 };
@@ -189,4 +214,5 @@ module.exports = {
   logoutUser,
   resetPassword,
   forgotPassword,
+  resetPasswordWithToken,
 };

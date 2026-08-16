@@ -145,10 +145,32 @@ const forgotPassword = async (req, res) => {
   }
 };
 
+/* ================= CONFIRM RESET PASSWORD ================= */
+const confirmResetPassword = async (req, res) => {
+  try {
+    authLogger.info("Confirm reset password API called");
+    const { token, new_password } = req.body;
+    await authService.resetPasswordWithToken(token, new_password);
+    return sendResponse(res, {
+      success: SUCCESS.YES,
+      message: "Password reset successful. You can now log in with your new password.",
+      data: null,
+      statusCode: STATUS_CODES.OK,
+    });
+  } catch (error) {
+    return sendResponse(res, {
+      success: SUCCESS.NO,
+      message: error.message || MESSAGES.COMMON.SERVER_ERROR,
+      statusCode: STATUS_CODES.BAD_REQUEST,
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
   logout,
   resetPassword,
   forgotPassword,
+  confirmResetPassword,
 };

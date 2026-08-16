@@ -26,5 +26,8 @@ router.get("/admin/list", authMiddleware, orderController.getAdminOrders);
 /* ================= ADMIN ANALYTICS ================= */
 router.get("/admin/analytics", authMiddleware, orderController.getAdminAnalytics);
 
+/* ================= UPDATE PAYMENT STATUS ================= */
+router.patch("/update-payment-status/:id", authMiddleware, orderController.updatePaymentStatus);
+
 module.exports = router;
 

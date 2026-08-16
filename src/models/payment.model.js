@@ -10,11 +10,16 @@ const paymentSchema = new mongoose.Schema(
 
     payment_method: {
       type: String,
-      enum: ["COD", "UPI", "CARD"],
+      enum: ["COD", "UPI"],
       required: true,
     },
 
     transaction_id: {
+      type: String,
+      default: null,
+    },
+
+    upi_utr: {
       type: String,
       default: null,
     },

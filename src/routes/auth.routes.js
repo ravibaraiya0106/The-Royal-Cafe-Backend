@@ -40,4 +40,7 @@ router.put(
 /* ================= FORGOT PASSWORD ================= */
 router.post("/forgot-password", upload.none(), authController.forgotPassword);
 
+/* ================= CONFIRM RESET PASSWORD ================= */
+router.post("/confirm-reset-password", upload.none(), authController.confirmResetPassword);
+
 module.exports = router;

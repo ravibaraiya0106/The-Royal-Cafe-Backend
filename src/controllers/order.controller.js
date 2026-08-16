@@ -133,11 +133,37 @@ const getAdminAnalytics = async (req, res) => {
   }
 };
 
+/* ================= UPDATE PAYMENT STATUS ================= */
+const updatePaymentStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { payment_status } = req.body;
+
+    const order = await orderService.updatePaymentStatus(id, {
+      payment_status,
+    });
+
+    return sendResponse(res, {
+      success: SUCCESS.YES,
+      message: `Payment status updated to ${payment_status}`,
+      data: order,
+      statusCode: STATUS_CODES.OK,
+    });
+  } catch (error) {
+    return sendResponse(res, {
+      success: SUCCESS.NO,
+      message: error.message || MESSAGES.COMMON.SERVER_ERROR,
+      statusCode: STATUS_CODES.BAD_REQUEST,
+    });
+  }
+};
+
 module.exports = {
   createOrder,
   getUserOrders,
   getUserOrderDetails,
   getAdminOrders,
   getAdminAnalytics,
+  updatePaymentStatus,
 };
 
