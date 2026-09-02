@@ -160,6 +160,9 @@ const MESSAGES = {
     DETAILS_SUCCESS: "Order details fetched successfully",
     ADMIN_FETCH_SUCCESS: "Admin orders fetched successfully",
     ANALYTICS_SUCCESS: "Admin analytics fetched successfully",
+    CANCEL_SUCCESS: "Order cancelled successfully",
+    ALREADY_CANCELLED: "Order is already cancelled",
+    DELIVERED_CANNOT_CANCEL: "Delivered orders cannot be cancelled",
     NOT_FOUND: "Order not found",
   },
   PAYMENT: {

@@ -32,7 +32,16 @@ const createOrderValidation = Joi.object({
   notes: Joi.string().allow("").optional(),
 });
 
+const cancelOrderValidation = Joi.object({
+  reason: Joi.string().trim().min(3).required().messages({
+    "string.empty": "Cancellation reason is required",
+    "string.min": "Reason must be at least 3 characters",
+    "any.required": "Cancellation reason is required",
+  }),
+});
+
 module.exports = {
   createOrderValidation,
+  cancelOrderValidation,
 };
 

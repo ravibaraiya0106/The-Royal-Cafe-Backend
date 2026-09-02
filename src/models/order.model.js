@@ -121,6 +121,22 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+
+    cancellation_reason: {
+      type: String,
+      default: "",
+    },
+
+    cancelled_by: {
+      type: String,
+      enum: ["customer", "admin", null],
+      default: null,
+    },
+
+    cancelled_at: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,

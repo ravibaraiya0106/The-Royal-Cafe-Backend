@@ -62,6 +62,21 @@ const initSocket = (server) => {
   io.on("connection", (socket) => {
     console.log(`🔌 Client connected to Socket.IO: ${socket.id}`);
 
+    const { id: userId, role } = socket.user || {};
+    if (userId) {
+      socket.join(`user:${userId}`);
+    }
+    if (role === "delivery_person" && userId) {
+      getDeliveryPersonByUser(userId)
+        .then((dp) => {
+          if (dp) {
+            socket.join(`delivery_person:${dp._id}`);
+            socket.join(`delivery_person:${userId}`);
+          }
+        })
+        .catch(() => {});
+    }
+
     // Join order-specific room or role room
     socket.on("join_order", async (orderId) => {
       try {

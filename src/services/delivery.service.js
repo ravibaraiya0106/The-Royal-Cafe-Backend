@@ -7,6 +7,8 @@ const OrderStatusHistory = require("../models/orderStatusHistory.model");
 const User = require("../models/user.model");
 const { MESSAGES } = require("../constants/constant");
 const { getIO } = require("../config/socket");
+const sendEmail = require("../utils/sendMail");
+const buildDeliveryAssignmentTemplate = require("../templates/deliveryAssignmentEmail.template");
 
 /* ================= HELPER: GET DELIVERY PERSON BY USER ID ================= */
 const getDeliveryPersonByUser = async (userId) => {
@@ -33,7 +35,7 @@ const assignDelivery = async (data = {}) => {
   const deliveryPerson = await DeliveryPerson.findOne({
     _id: deliveryPersonId,
     is_active: true,
-  });
+  }).populate("user", "email username phone_no");
 
   if (!deliveryPerson) {
     throw new Error(MESSAGES.DELIVERY_PERSON.NOT_FOUND);
@@ -66,9 +68,74 @@ const assignDelivery = async (data = {}) => {
     changed_at: new Date(),
   });
 
-  return await Delivery.findById(delivery._id)
+  const populatedDelivery = await Delivery.findById(delivery._id)
     .populate("order")
     .populate("delivery_person");
+
+  // 🔔 REAL-TIME SOCKET NOTIFICATION
+  try {
+    const io = getIO();
+    const notificationPayload = {
+      event: "new_delivery_assigned",
+      deliveryId: delivery._id,
+      orderId: order._id,
+      orderNumber: order.order_number,
+      finalAmount: order.final_amount,
+      paymentMethod: order.payment_method,
+      address: order.deliveryLocation?.address || "",
+      phone: order.phone,
+      notes: notes || "",
+      assignedAt: new Date().toISOString(),
+    };
+
+    // Emit to specific delivery person rooms
+    io.to(`delivery_person:${deliveryPerson._id}`).emit(
+      "new_delivery_assigned",
+      notificationPayload,
+    );
+    if (deliveryPerson.user) {
+      const dpUserId = typeof deliveryPerson.user === "object" ? deliveryPerson.user._id : deliveryPerson.user;
+      io.to(`delivery_person:${dpUserId}`).emit(
+        "new_delivery_assigned",
+        notificationPayload,
+      );
+      io.to(`user:${dpUserId}`).emit(
+        "new_delivery_assigned",
+        notificationPayload,
+      );
+    }
+  } catch (socketErr) {
+    console.error("Socket notification error on delivery assignment:", socketErr?.message || socketErr);
+  }
+
+  // 📧 SEND EMAIL NOTIFICATION TO DELIVERY PERSON
+  try {
+    const recipientEmail =
+      deliveryPerson.email ||
+      (typeof deliveryPerson.user === "object" ? deliveryPerson.user.email : null);
+
+    if (recipientEmail) {
+      const html = buildDeliveryAssignmentTemplate({
+        deliveryPersonName: deliveryPerson.name,
+        orderNumber: order.order_number,
+        totalAmount: order.final_amount,
+        paymentMethod: order.payment_method,
+        address: order.deliveryLocation?.address || "Customer address",
+        phone: order.phone,
+        notes,
+      });
+
+      await sendEmail(
+        recipientEmail,
+        `🛵 New Order Assignment - #${order.order_number} | The Royal Cafe`,
+        html,
+      );
+    }
+  } catch (emailErr) {
+    console.error("Email notification error on delivery assignment:", emailErr?.message || emailErr);
+  }
+
+  return populatedDelivery;
 };
 
 /* ================= GET MY DELIVERIES (DELIVERY BOY) ================= */

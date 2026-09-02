@@ -3,6 +3,7 @@ const OrderItem = require("../models/orderItem.model");
 const Payment = require("../models/payment.model");
 const OrderStatusHistory = require("../models/orderStatusHistory.model");
 const Coupon = require("../models/coupon.model");
+const { MESSAGES } = require("../constants/constant");
 
 const cartService = require("./cart.service");
 
@@ -152,16 +153,37 @@ const createOrder = async (userId, data = {}) => {
   };
 };
 
-/* ================= USER ORDER HISTORY ================= */
-const getUserOrders = async (userId) => {
-  const orders = await Order.find({ user: userId })
-    .sort({ createdAt: -1 })
-    .populate("coupon", "code description discount_type discount_value min_order_amount max_discount expiry_date")
-    .select(
-      "order_number total_amount final_amount discount_amount coupon payment_method payment_status order_status createdAt deliveryLocation phone",
-    );
+/* ================= USER ORDER HISTORY (PAGINATED) ================= */
+const getUserOrders = async (userId, query = {}) => {
+  const { page = 1, limit = 5 } = query;
 
-  return orders;
+  const parsedPage = Number(page);
+  const parsedLimit = Number(limit);
+  const safePage = Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+  const safeLimit = Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : 5;
+
+  const skip = (safePage - 1) * safeLimit;
+  const filter = { user: userId };
+
+  const [orders, total] = await Promise.all([
+    Order.find(filter)
+      .sort({ createdAt: -1 })
+      .populate("coupon", "code description discount_type discount_value min_order_amount max_discount expiry_date")
+      .select(
+        "order_number total_amount final_amount discount_amount coupon payment_method payment_status order_status createdAt deliveryLocation phone notes cancellation_reason cancelled_by cancelled_at",
+      )
+      .skip(skip)
+      .limit(safeLimit),
+    Order.countDocuments(filter),
+  ]);
+
+  return {
+    data: orders,
+    total,
+    page: safePage,
+    limit: safeLimit,
+    totalPages: Math.ceil(total / safeLimit),
+  };
 };
 
 /* ================= ADMIN ORDER HISTORY (PAGINATED + FILTERED) ================= */
@@ -202,7 +224,7 @@ const getAdminOrders = async (query = {}) => {
     Order.find(filter)
       .sort({ createdAt: -1 })
       .select(
-        "order_number user final_amount payment_method payment_status order_status razorpay_order_id razorpay_payment_id createdAt deliveryLocation phone",
+        "order_number user final_amount total_amount discount_amount payment_method payment_status order_status razorpay_order_id razorpay_payment_id createdAt deliveryLocation phone notes cancellation_reason cancelled_by cancelled_at",
       )
       .populate("user", "username first_name last_name email phone")
       .skip(skip)
@@ -357,6 +379,45 @@ const updatePaymentStatus = async (orderId, { payment_status }) => {
   return order;
 };
 
+/* ================= CANCEL ORDER ================= */
+const cancelOrder = async (userId, userRole, orderId, { reason }) => {
+  const query = userRole === "admin" ? { _id: orderId } : { _id: orderId, user: userId };
+  const order = await Order.findOne(query);
+
+  if (!order) {
+    throw new Error(MESSAGES.ORDER.NOT_FOUND);
+  }
+
+  if (order.order_status === "cancelled") {
+    throw new Error(MESSAGES.ORDER.ALREADY_CANCELLED);
+  }
+
+  if (order.order_status === "delivered") {
+    throw new Error(MESSAGES.ORDER.DELIVERED_CANNOT_CANCEL);
+  }
+
+  order.order_status = "cancelled";
+  order.cancellation_reason = reason;
+  order.cancelled_by = userRole === "admin" ? "admin" : "customer";
+  order.cancelled_at = new Date();
+  await order.save();
+
+  await OrderStatusHistory.create({
+    order: order._id,
+    status: "cancelled",
+    changed_at: new Date(),
+    notes: `Cancelled by ${order.cancelled_by}: ${reason}`,
+  });
+
+  const Delivery = require("../models/delivery.model");
+  await Delivery.findOneAndUpdate(
+    { order: order._id },
+    { status: "CANCELLED" },
+  );
+
+  return order;
+};
+
 module.exports = {
   createOrder,
   getUserOrders,
@@ -364,5 +425,6 @@ module.exports = {
   getUserOrderDetails,
   getAdminAnalytics,
   updatePaymentStatus,
+  cancelOrder,
 };
 

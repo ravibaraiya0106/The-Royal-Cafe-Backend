@@ -51,7 +51,7 @@ const createOrder = async (req, res) => {
 const getUserOrders = async (req, res) => {
   try {
     const userId = req.user.id;
-    const orders = await orderService.getUserOrders(userId);
+    const orders = await orderService.getUserOrders(userId, req.query);
 
     return sendResponse(res, {
       success: SUCCESS.YES,
@@ -172,6 +172,33 @@ const updatePaymentStatus = async (req, res) => {
   }
 };
 
+/* ================= CANCEL ORDER ================= */
+const cancelOrder = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const userRole = req.user.role;
+    const { id } = req.params;
+    const { reason } = req.body;
+
+    const order = await orderService.cancelOrder(userId, userRole, id, {
+      reason,
+    });
+
+    return sendResponse(res, {
+      success: SUCCESS.YES,
+      message: MESSAGES.ORDER.CANCEL_SUCCESS,
+      data: order,
+      statusCode: STATUS_CODES.OK,
+    });
+  } catch (error) {
+    return sendResponse(res, {
+      success: SUCCESS.NO,
+      message: error.message || MESSAGES.COMMON.SERVER_ERROR,
+      statusCode: STATUS_CODES.BAD_REQUEST,
+    });
+  }
+};
+
 module.exports = {
   createOrder,
   getUserOrders,
@@ -179,5 +206,6 @@ module.exports = {
   getAdminOrders,
   getAdminAnalytics,
   updatePaymentStatus,
+  cancelOrder,
 };
 
