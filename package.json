@@ -9,6 +9,11 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",
+    "seed": "node src/seeders/index.js",
+    "seed:categories": "node src/seeders/category.seeder.js",
+    "seed:products": "node src/seeders/product.seeder.js",
+    "seed:blogs": "node src/seeders/blog.seeder.js",
+    "seed:coupons": "node src/seeders/coupon.seeder.js",
     "test": "jest"
   },
   "repository": {
