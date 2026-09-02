@@ -307,7 +307,7 @@ const getAdminAnalytics = async () => {
       { $group: { _id: null, total: { $sum: "$final_amount" } } },
     ]),
     Order.countDocuments({}),
-    User.countDocuments({ role: "customer" }),
+    User.countDocuments({ role: { $in: ["user", "customer"] }, deleted_at: null }),
     DeliveryPerson.find({ is_active: true }),
     Order.aggregate([
       { $group: { _id: "$order_status", count: { $sum: 1 } } },

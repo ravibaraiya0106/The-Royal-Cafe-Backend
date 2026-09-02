@@ -148,6 +148,20 @@ const getMyDeliveries = async (userId, query = {}) => {
   const parsedLimit = Math.max(1, Number(limit) || 10);
   const skip = (parsedPage - 1) * parsedLimit;
 
+  // Auto-sync legacy cancelled orders' delivery records
+  try {
+    const cancelledOrders = await Order.find({ order_status: "cancelled" }).select("_id");
+    if (cancelledOrders.length > 0) {
+      const cancelledOrderIds = cancelledOrders.map((o) => o._id);
+      await Delivery.updateMany(
+        { order: { $in: cancelledOrderIds }, delivery_status: { $ne: "cancelled" } },
+        { delivery_status: "cancelled" },
+      );
+    }
+  } catch (syncErr) {
+    console.error("Auto-sync cancelled orders error:", syncErr);
+  }
+
   const filter = { delivery_person: dp._id };
 
   if (status) {
@@ -160,7 +174,7 @@ const getMyDeliveries = async (userId, query = {}) => {
     }
   }
 
-  const [deliveries, total] = await Promise.all([
+  const [deliveries, rawTotal] = await Promise.all([
     Delivery.find(filter)
       .sort({ createdAt: -1 })
       .populate({
@@ -189,11 +203,13 @@ const getMyDeliveries = async (userId, query = {}) => {
       }),
     )
   ).filter((deliveryObj) => {
-    // Exclude cancelled orders and cancelled delivery tasks from active delivery tasks
+    // Exclude cancelled orders and cancelled delivery tasks
     if (deliveryObj.delivery_status === "cancelled") return false;
-    if (deliveryObj.order && deliveryObj.order.order_status === "cancelled") return false;
+    if (!deliveryObj.order || deliveryObj.order.order_status === "cancelled") return false;
     return true;
   });
+
+  const total = Math.min(rawTotal, populatedDeliveries.length);
 
   return {
     delivery_person: dp,
@@ -201,7 +217,7 @@ const getMyDeliveries = async (userId, query = {}) => {
     total,
     page: parsedPage,
     limit: parsedLimit,
-    totalPages: Math.ceil(total / parsedLimit),
+    totalPages: Math.max(1, Math.ceil(total / parsedLimit)),
   };
 };
 
