@@ -147,6 +147,21 @@ const createOrder = async (userId, data = {}) => {
     });
   }
 
+  // 🔔 NOTIFY ADMIN REAL-TIME VIA SOCKET
+  try {
+    const { getIO } = require("../config/socket");
+    const io = getIO();
+    io.to("admin_room").emit("admin:new_order", {
+      orderId: order._id,
+      orderNumber: order.order_number,
+      finalAmount: order.final_amount,
+      paymentMethod: order.payment_method,
+      createdAt: order.createdAt,
+    });
+  } catch (socketErr) {
+    console.error("Socket error emitting admin:new_order:", socketErr?.message || socketErr);
+  }
+
   return {
     order,
     orderItems,
@@ -360,6 +375,10 @@ const updatePaymentStatus = async (orderId, { payment_status }) => {
   const order = await Order.findById(orderId);
   if (!order) throw new Error("Order not found");
 
+  if (order.order_status === "cancelled") {
+    throw new Error("Cannot update payment status of a cancelled order");
+  }
+
   order.payment_status = payment_status;
   if (payment_status === "paid" && order.order_status === "pending") {
     order.order_status = "confirmed";
@@ -400,7 +419,23 @@ const cancelOrder = async (userId, userRole, orderId, { reason }) => {
   order.cancellation_reason = reason;
   order.cancelled_by = userRole === "admin" ? "admin" : "customer";
   order.cancelled_at = new Date();
+
+  // Update payment status appropriately upon cancellation
+  if (order.payment_status === "pending") {
+    order.payment_status = "cancelled";
+  } else if (order.payment_status === "paid") {
+    order.payment_status = "refunded";
+  }
+
   await order.save();
+
+  // Also update associated payment record
+  const Payment = require("../models/payment.model");
+  await Payment.findOneAndUpdate(
+    { order: order._id },
+    { payment_status: order.payment_status },
+    { upsert: false },
+  );
 
   await OrderStatusHistory.create({
     order: order._id,
@@ -412,8 +447,23 @@ const cancelOrder = async (userId, userRole, orderId, { reason }) => {
   const Delivery = require("../models/delivery.model");
   await Delivery.findOneAndUpdate(
     { order: order._id },
-    { status: "CANCELLED" },
+    { delivery_status: "cancelled" },
   );
+
+  // 🔔 NOTIFY ADMIN REAL-TIME VIA SOCKET
+  try {
+    const { getIO } = require("../config/socket");
+    const io = getIO();
+    io.to("admin_room").emit("admin:order_cancelled", {
+      orderId: order._id,
+      orderNumber: order.order_number,
+      reason,
+      cancelledBy: order.cancelled_by,
+      cancelledAt: order.cancelled_at,
+    });
+  } catch (socketErr) {
+    console.error("Socket error emitting admin:order_cancelled:", socketErr?.message || socketErr);
+  }
 
   return order;
 };

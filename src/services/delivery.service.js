@@ -88,21 +88,19 @@ const assignDelivery = async (data = {}) => {
       assignedAt: new Date().toISOString(),
     };
 
-    // Emit to specific delivery person rooms
+    // Emit once to delivery person's socket room
     io.to(`delivery_person:${deliveryPerson._id}`).emit(
       "new_delivery_assigned",
       notificationPayload,
     );
-    if (deliveryPerson.user) {
+    if (deliveryPerson.user && String(deliveryPerson.user) !== String(deliveryPerson._id)) {
       const dpUserId = typeof deliveryPerson.user === "object" ? deliveryPerson.user._id : deliveryPerson.user;
-      io.to(`delivery_person:${dpUserId}`).emit(
-        "new_delivery_assigned",
-        notificationPayload,
-      );
-      io.to(`user:${dpUserId}`).emit(
-        "new_delivery_assigned",
-        notificationPayload,
-      );
+      if (String(dpUserId) !== String(deliveryPerson._id)) {
+        io.to(`delivery_person:${dpUserId}`).emit(
+          "new_delivery_assigned",
+          notificationPayload,
+        );
+      }
     }
   } catch (socketErr) {
     console.error("Socket notification error on delivery assignment:", socketErr?.message || socketErr);
@@ -177,18 +175,25 @@ const getMyDeliveries = async (userId, query = {}) => {
     Delivery.countDocuments(filter),
   ]);
 
-  const populatedDeliveries = await Promise.all(
-    deliveries.map(async (item) => {
-      const deliveryObj = item.toObject();
-      if (deliveryObj.order && deliveryObj.order._id) {
-        const items = await OrderItem.find({ order: deliveryObj.order._id }).select(
-          "product_name price quantity subtotal",
-        );
-        deliveryObj.order.items = items;
-      }
-      return deliveryObj;
-    }),
-  );
+  const populatedDeliveries = (
+    await Promise.all(
+      deliveries.map(async (item) => {
+        const deliveryObj = item.toObject();
+        if (deliveryObj.order && deliveryObj.order._id) {
+          const items = await OrderItem.find({ order: deliveryObj.order._id }).select(
+            "product_name price quantity subtotal",
+          );
+          deliveryObj.order.items = items;
+        }
+        return deliveryObj;
+      }),
+    )
+  ).filter((deliveryObj) => {
+    // Exclude cancelled orders and cancelled delivery tasks from active delivery tasks
+    if (deliveryObj.delivery_status === "cancelled") return false;
+    if (deliveryObj.order && deliveryObj.order.order_status === "cancelled") return false;
+    return true;
+  });
 
   return {
     delivery_person: dp,

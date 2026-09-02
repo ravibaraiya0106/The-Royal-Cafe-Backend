@@ -66,6 +66,9 @@ const initSocket = (server) => {
     if (userId) {
       socket.join(`user:${userId}`);
     }
+    if (role === "admin") {
+      socket.join("admin_room");
+    }
     if (role === "delivery_person" && userId) {
       getDeliveryPersonByUser(userId)
         .then((dp) => {
