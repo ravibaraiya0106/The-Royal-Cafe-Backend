@@ -23,9 +23,11 @@ const createOrderValidation = Joi.object({
     "any.required": "Phone number is required",
   }),
   payment_method: Joi.string()
-    .valid("COD", "UPI")
+    .valid("COD", "RAZORPAY")
     .default("COD"),
-  upi_utr: Joi.string().trim().allow("").optional(),
+  razorpay_order_id: Joi.string().trim().allow("").optional(),
+  razorpay_payment_id: Joi.string().trim().allow("").optional(),
+  razorpay_signature: Joi.string().trim().allow("").optional(),
   coupon_code: Joi.string().trim().allow("").optional(),
   notes: Joi.string().allow("").optional(),
 });

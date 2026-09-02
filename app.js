@@ -24,6 +24,13 @@ app.use(
 /* Logging */
 app.use(morgan("dev"));
 
+/* Razorpay Webhook - needs raw body, so register BEFORE express.json() */
+app.post(
+  "/api/v1/payment/webhook",
+  express.raw({ type: "application/json", limit: "1mb" }),
+  require("./src/controllers/payment.controller").razorpayWebhook,
+);
+
 /* Body Parser */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -74,6 +81,9 @@ app.use(`${API_PREFIX}/delivery`, require("./src/routes/delivery.routes"));
 
 // Blogs
 app.use(`${API_PREFIX}/blog`, require("./src/routes/blog.routes"));
+
+// Payment Routes
+app.use(`${API_PREFIX}/payment`, require("./src/routes/payment.routes"));
 /* ================= HEALTH CHECK ================= */
 
 app.get("/", (req, res) => {

@@ -6,7 +6,18 @@ const { SUCCESS, STATUS_CODES, MESSAGES } = require("../constants/constant");
 const createOrder = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { address, latitude, longitude, phone, payment_method, notes, coupon_code } = req.body;
+    const {
+      address,
+      latitude,
+      longitude,
+      phone,
+      payment_method,
+      notes,
+      coupon_code,
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+    } = req.body;
 
     const result = await orderService.createOrder(userId, {
       address,
@@ -16,6 +27,9 @@ const createOrder = async (req, res) => {
       payment_method,
       notes,
       coupon_code,
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
     });
 
     return sendResponse(res, {

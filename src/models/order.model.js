@@ -39,7 +39,7 @@ const orderSchema = new mongoose.Schema(
 
     payment_method: {
       type: String,
-      enum: ["COD", "UPI"],
+      enum: ["COD", "RAZORPAY"],
       default: "COD",
     },
 
@@ -49,7 +49,17 @@ const orderSchema = new mongoose.Schema(
       default: "pending",
     },
 
-    upi_utr: {
+    razorpay_order_id: {
+      type: String,
+      default: null,
+    },
+
+    razorpay_payment_id: {
+      type: String,
+      default: null,
+    },
+
+    razorpay_signature: {
       type: String,
       default: null,
     },

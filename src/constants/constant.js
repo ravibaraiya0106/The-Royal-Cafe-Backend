@@ -162,6 +162,13 @@ const MESSAGES = {
     ANALYTICS_SUCCESS: "Admin analytics fetched successfully",
     NOT_FOUND: "Order not found",
   },
+  PAYMENT: {
+    RAZORPAY_ORDER_SUCCESS: "Razorpay order created successfully",
+    RAZORPAY_VERIFY_SUCCESS: "Razorpay payment verified successfully",
+    RAZORPAY_VERIFY_FAILED: "Invalid Razorpay signature. Payment verification failed.",
+    RAZORPAY_NOT_CONFIGURED: "Razorpay credentials are not configured in the environment",
+    AMOUNT_REQUIRED: "A valid amount is required",
+  },
 };
 
 const VALIDATIONS = {
@@ -227,6 +234,13 @@ const VALIDATIONS = {
   BLOG: {
     TITLE_REQUIRED: "Blog title is required",
     DESCRIPTION_REQUIRED: "Blog description is required",
+  },
+  PAYMENT: {
+    AMOUNT_REQUIRED: "Amount is required",
+    AMOUNT_INVALID: "Amount must be a positive number",
+    RAZORPAY_ORDER_ID_REQUIRED: "Razorpay order ID is required for verification",
+    RAZORPAY_PAYMENT_ID_REQUIRED: "Razorpay payment ID is required for verification",
+    RAZORPAY_SIGNATURE_REQUIRED: "Razorpay signature is required for verification",
   },
 };
 

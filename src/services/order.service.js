@@ -21,7 +21,9 @@ const createOrder = async (userId, data = {}) => {
     payment_method = "COD",
     notes = "",
     coupon_code,
-    upi_utr = "",
+    razorpay_order_id = "",
+    razorpay_payment_id = "",
+    razorpay_signature = "",
   } = data;
 
   const cartItems = await cartService.getUserCart(userId);
@@ -69,9 +71,15 @@ const createOrder = async (userId, data = {}) => {
   }
 
   const isCOD = payment_method === "COD";
-  const isPaidUPI = payment_method === "UPI" && Boolean(upi_utr && upi_utr.trim());
-  const orderStatus = isCOD || isPaidUPI ? "confirmed" : "pending";
-  const paymentStatus = isPaidUPI ? "paid" : "pending";
+  const isPaidRazorpay =
+    payment_method === "RAZORPAY" &&
+    Boolean(
+      razorpay_order_id && razorpay_order_id.trim() &&
+      razorpay_payment_id && razorpay_payment_id.trim() &&
+      razorpay_signature && razorpay_signature.trim(),
+    );
+  const orderStatus = isCOD || isPaidRazorpay ? "confirmed" : "pending";
+  const paymentStatus = isPaidRazorpay ? "paid" : "pending";
 
   const order = await Order.create({
     order_number: generateOrderNumber(),
@@ -83,7 +91,9 @@ const createOrder = async (userId, data = {}) => {
     payment_method,
     payment_status: paymentStatus,
     order_status: orderStatus,
-    upi_utr: isPaidUPI ? upi_utr.trim() : null,
+    razorpay_order_id: isPaidRazorpay ? razorpay_order_id.trim() : null,
+    razorpay_payment_id: isPaidRazorpay ? razorpay_payment_id.trim() : null,
+    razorpay_signature: isPaidRazorpay ? razorpay_signature.trim() : null,
     deliveryLocation: {
       address,
       latitude,
@@ -109,11 +119,13 @@ const createOrder = async (userId, data = {}) => {
   await Payment.create({
     order: order._id,
     payment_method,
-    transaction_id: isPaidUPI ? upi_utr.trim() : null,
-    upi_utr: isPaidUPI ? upi_utr.trim() : null,
+    transaction_id: isPaidRazorpay ? razorpay_payment_id.trim() : null,
+    razorpay_order_id: isPaidRazorpay ? razorpay_order_id.trim() : null,
+    razorpay_payment_id: isPaidRazorpay ? razorpay_payment_id.trim() : null,
+    razorpay_signature: isPaidRazorpay ? razorpay_signature.trim() : null,
     amount: finalAmount,
     payment_status: paymentStatus,
-    paid_at: isPaidUPI ? new Date() : null,
+    paid_at: isPaidRazorpay ? new Date() : null,
   });
 
   await OrderStatusHistory.create({
@@ -122,8 +134,8 @@ const createOrder = async (userId, data = {}) => {
     changed_at: new Date(),
   });
 
-  // Clear user's cart for COD or completed UPI payments
-  if (isCOD || isPaidUPI) {
+  // Clear user's cart for COD or completed Razorpay payments
+  if (isCOD || isPaidRazorpay) {
     await cartService.clearCart(userId);
   }
 
@@ -190,7 +202,7 @@ const getAdminOrders = async (query = {}) => {
     Order.find(filter)
       .sort({ createdAt: -1 })
       .select(
-        "order_number user final_amount payment_method payment_status order_status upi_utr createdAt deliveryLocation phone",
+        "order_number user final_amount payment_method payment_status order_status razorpay_order_id razorpay_payment_id createdAt deliveryLocation phone",
       )
       .populate("user", "username first_name last_name email phone")
       .skip(skip)
