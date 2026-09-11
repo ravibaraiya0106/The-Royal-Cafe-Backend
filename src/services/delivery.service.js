@@ -305,6 +305,14 @@ const updateDeliveryStatus = async (deliveryId, userId, data = {}) => {
           paid_at: new Date(),
         },
       );
+
+      // 📧 SEND BILL RECEIPT EMAIL TO CUSTOMER
+      try {
+        const { sendOrderReceiptEmail } = require("./order.service");
+        await sendOrderReceiptEmail(order._id);
+      } catch (receiptErr) {
+        console.error("Error sending receipt email on delivery completion:", receiptErr?.message || receiptErr);
+      }
     }
 
     dp.is_available = true;

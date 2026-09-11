@@ -162,6 +162,15 @@ const createOrder = async (userId, data = {}) => {
     console.error("Socket error emitting admin:new_order:", socketErr?.message || socketErr);
   }
 
+  // 📧 SEND BILL RECEIPT EMAIL FOR RAZORPAY ONLINE PAYMENTS
+  if (isPaidRazorpay) {
+    try {
+      await sendOrderReceiptEmail(order._id);
+    } catch (emailErr) {
+      console.error("Error sending initial Razorpay receipt email:", emailErr?.message || emailErr);
+    }
+  }
+
   return {
     order,
     orderItems,
@@ -395,7 +404,85 @@ const updatePaymentStatus = async (orderId, { payment_status }) => {
     { upsert: true },
   );
 
+  if (payment_status === "paid") {
+    try {
+      await sendOrderReceiptEmail(order._id);
+    } catch (emailErr) {
+      console.error("Error sending receipt email on updatePaymentStatus:", emailErr?.message || emailErr);
+    }
+  }
+
   return order;
+};
+
+/* ================= SEND ORDER RECEIPT EMAIL ================= */
+const sendOrderReceiptEmail = async (orderId) => {
+  try {
+    const order = await Order.findById(orderId).populate("user", "username first_name last_name email phone_no");
+    if (!order) return false;
+    if (order.receipt_email_sent) return false;
+    if (order.order_status === "cancelled") return false;
+    if (order.payment_status !== "paid") return false;
+
+    const recipientEmail = order.user?.email;
+    if (!recipientEmail) return false;
+
+    const orderItems = await OrderItem.find({ order: order._id });
+    const sendEmail = require("../utils/sendMail");
+    const buildOrderReceiptTemplate = require("../templates/orderReceiptEmail.template");
+    const generateOrderReceiptPDF = require("../utils/pdfGenerator");
+
+    const customerName =
+      `${order.user.first_name || ""} ${order.user.last_name || ""}`.trim() ||
+      order.user.username ||
+      "Valued Customer";
+
+    const receiptPayload = {
+      customerName,
+      orderNumber: order.order_number,
+      orderDate: order.createdAt,
+      paymentMethod: order.payment_method,
+      paymentStatus: order.payment_status,
+      deliveryAddress: order.deliveryLocation?.address || "",
+      phone: order.phone,
+      orderItems,
+      subtotal: order.total_amount,
+      discountAmount: order.discount_amount,
+      finalAmount: order.final_amount,
+      notes: order.notes,
+    };
+
+    const html = buildOrderReceiptTemplate(receiptPayload);
+
+    let attachments = [];
+    try {
+      const pdfBuffer = await generateOrderReceiptPDF(receiptPayload);
+      if (pdfBuffer && pdfBuffer.length > 0) {
+        attachments.push({
+          filename: `Receipt_${order.order_number}.pdf`,
+          content: pdfBuffer,
+          contentType: "application/pdf",
+        });
+      }
+    } catch (pdfErr) {
+      console.error("Error generating PDF receipt attachment:", pdfErr?.message || pdfErr);
+    }
+
+    await sendEmail(
+      recipientEmail,
+      `🧾 Order Bill Receipt - #${order.order_number} | The Royal Cafe`,
+      html,
+      attachments
+    );
+
+    order.receipt_email_sent = true;
+    order.receipt_email_sent_at = new Date();
+    await order.save();
+    return true;
+  } catch (err) {
+    console.error("Error sending order receipt email:", err?.message || err);
+    return false;
+  }
 };
 
 /* ================= CANCEL ORDER ================= */
@@ -476,5 +563,6 @@ module.exports = {
   getAdminAnalytics,
   updatePaymentStatus,
   cancelOrder,
+  sendOrderReceiptEmail,
 };
 

@@ -137,6 +137,16 @@ const orderSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+
+    receipt_email_sent: {
+      type: Boolean,
+      default: false,
+    },
+
+    receipt_email_sent_at: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
